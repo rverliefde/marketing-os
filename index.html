@@ -574,6 +574,7 @@
       <option value="customer-story">Customer story / case study</option>
       <option value="email">Customer service email</option>
       <option value="video">Video script</option>
+      <option value="helpdoc">Helpdoc / support article</option>
       <option value="other">Other / general</option>
     </select>
 
@@ -588,7 +589,7 @@
     <div class="file-error" id="fileError" style="display:none;"></div>
 
     <label for="draft">Or paste your draft directly</label>
-    <textarea id="draft" placeholder="Paste your blog post, email, script or article draft here..."></textarea>
+    <textarea id="draft" placeholder="Paste your blog post, email, script, helpdoc or article draft here..."></textarea>
     <div class="counter" id="counter">0 words</div>
 
     <div class="dial-group">
@@ -678,7 +679,12 @@ const DOC_FILES = [
   "example-sms-health-tech.md",
   "example-pulsemedica-case-study.md",
   "example-acma-sender-id-register.md",
-  "example-email-migration-guide.md"
+  "example-email-migration-guide.md",
+  "helpdoc-formatting-guidelines.md",
+  "helpdoc-example-1-rcs-at-clicksend.md",
+  "helpdoc-example-2-mps-speed-of-delivery-rcs.md",
+  "helpdoc-example-3-choosing-the-right-sender-id.md",
+  "helpdoc-example-4-guide-to-alpha-tags.md"
 ];
 
 /* =========================================================
@@ -713,7 +719,17 @@ Universal problem framing before naming the customer > customer intro (mission/p
   "example-acma-sender-id-register.md": `# Example: Regulatory/news post pattern
 Shock-stat hook > villain/loophole framing > the change stated plainly > "why this matters" section > before/after contrast > urgency stat > action checklist > punchy symmetric closing line > low-key support links. Short sentences, urgent but not fear-mongering, shortest/punchiest format.`,
   "example-email-migration-guide.md": `# Example: Migration/transition guide pattern
-Soft opening reframing a negative as positive > carve-out note for unaffected users > numbered action steps with sub-bullets > named third-party recommendation as genuine advice > clear deadline callout > "thinking beyond X" pivot/cross-sell section with comparison stats > reassuring support close. Empathetic, practical, avoids corporate deflection.`
+Soft opening reframing a negative as positive > carve-out note for unaffected users > numbered action steps with sub-bullets > named third-party recommendation as genuine advice > clear deadline callout > "thinking beyond X" pivot/cross-sell section with comparison stats > reassuring support close. Empathetic, practical, avoids corporate deflection.`,
+  "helpdoc-formatting-guidelines.md": `# ClickSend Intercom Article (Helpdoc) Formatting Guidelines
+Output using implementation labels, not raw markdown headers: [H1] = article title/major section (shows as main accordion item), [H2] = nested subsection (shows indented in accordion), [H3] = structural heading hidden from accordion. Single [ENTER] for all spacing — never double. [DIVIDER] only marks a genuine topic change, with one [ENTER] above it. [CALLOUT] used very rarely, only for text that truly needs isolating. [FAQ] section with [EXPANDABLE] Q&A pairs always goes at the bottom, never scattered inline. [IMAGE: description] placed immediately next to the instruction it illustrates — never invent screenshots. Preserve technical meaning; do not turn every paragraph into a heading.`,
+  "helpdoc-example-1-rcs-at-clicksend.md": `# Example: Overview/feature explainer pattern (Helpdoc)
+Title as H1 > intro paragraph > dividers between major H2 topics (What is it / Why it's powerful / Available features / Best use cases / Availability & requirements / How to apply) > hidden H3s for sub-concepts within a topic (e.g. two supporting benefits) > reference tables for use cases and requirements > one callout for a load-bearing warning > full FAQ block with expandables at the end. Images placed directly beside the claim they illustrate.`,
+  "helpdoc-example-2-mps-speed-of-delivery-rcs.md": `# Example: Short concept explainer pattern (Helpdoc)
+Title as H1 > a few intro paragraphs, no heading needed yet > single divider > one H2 for the supporting definition/breakdown > short bullet list of contributing factors. No FAQ, no callout, no images — demonstrates that light structure is correct when the content doesn't warrant more.`,
+  "helpdoc-example-3-choosing-the-right-sender-id.md": `# Example: Comparison/decision-guide pattern (Helpdoc)
+Title as H1 > intro > H2 "What's available" with each option (shared numbers, dedicated numbers, alpha tags, own numbers) as a hidden H3 so the accordion isn't cluttered with near-identical nested entries > divider > H2 "Regional examples" with per-country H3s > one callout for a single hard compliance rule > FAQ block at the end.`,
+  "helpdoc-example-4-guide-to-alpha-tags.md": `# Example: Step-by-step how-to pattern (Helpdoc)
+Title as H1 > concept H2s (what/when) > divider > numbered step-by-step H2 with an [IMAGE] placed right after the step it shows, not bundled elsewhere > more concept H2s (multi-country use, local registration) > a long reference/allow-list section as plain text rather than forcing it into a table or extra headings. No FAQ needed when the body already answers the likely questions.`
 };
 
 let loadedDocs = {};
@@ -792,6 +808,16 @@ function buildSystemPrompt(contentType, toneValue, brevityValue){
     templateDoc = loadedDocs["customer-service-email-template.md"] || "";
   } else if (contentType === "video") {
     templateDoc = loadedDocs["video-script-template.md"] || "";
+  } else if (contentType === "helpdoc") {
+    templateDoc = loadedDocs["helpdoc-formatting-guidelines.md"] || "";
+    const helpdocExampleFiles = [
+      "helpdoc-example-1-rcs-at-clicksend.md",
+      "helpdoc-example-2-mps-speed-of-delivery-rcs.md",
+      "helpdoc-example-3-choosing-the-right-sender-id.md",
+      "helpdoc-example-4-guide-to-alpha-tags.md"
+    ];
+    examplesBlock = "\n\n## Past helpdoc structural patterns (for structural reference — do not copy verbatim, use as a style/structure guide)\n\n" +
+      helpdocExampleFiles.map(f => loadedDocs[f] || "").join("\n\n---\n\n");
   }
 
   return `You are the ClickSend Content Editor — an internal tool that reviews and rewrites marketing and communications content so it's ready to use verbatim, without needing a human copywriter's review pass.
@@ -826,7 +852,7 @@ Respond with ONLY valid JSON, no markdown code fences, no preamble, matching thi
   "issues": [
     {"category": "tone" | "structure" | "brand" | "compliance" | "seo", "note": "short, specific description of the issue and why it matters"}
   ],
-  "rewrite": "the full rewritten content, ready to use verbatim, formatted with plain text line breaks (no markdown headers unless the content type calls for them)"${contentType === "blog" ? `,
+  "rewrite": "the full rewritten content, ready to use verbatim${contentType === "helpdoc" ? `, formatted using the Intercom implementation labels from the helpdoc formatting guidelines above ([H1]/[H2]/[H3], [ENTER], [DIVIDER], [CALLOUT], [FAQ]/[EXPANDABLE], [IMAGE: description]) — do not output plain markdown headers for helpdoc content` : `, formatted with plain text line breaks (no markdown headers unless the content type calls for them)`}"${(contentType === "blog" || contentType === "helpdoc") ? `,
   "seo": {
     "metaTitle": "50-60 characters, includes primary keyword",
     "metaDescription": "50-156 characters, includes primary keyword, compelling",
@@ -836,7 +862,7 @@ Respond with ONLY valid JSON, no markdown code fences, no preamble, matching thi
   }` : ``}
 }
 
-If the draft is already excellent, "issues" can be a short list or empty, and "rewrite" should still be provided as a clean final version. Be specific and concrete in issue notes — reference the actual phrase or section, not generic advice.${contentType === "blog" ? ` Always include the "seo" object for blog content, derived from the rewritten content.` : ``}`;
+If the draft is already excellent, "issues" can be a short list or empty, and "rewrite" should still be provided as a clean final version. Be specific and concrete in issue notes — reference the actual phrase or section, not generic advice.${(contentType === "blog" || contentType === "helpdoc") ? ` Always include the "seo" object for ${contentType === "blog" ? "blog" : "helpdoc"} content, derived from the rewritten content.` : ``}`;
 }
 
 /* =========================================================
