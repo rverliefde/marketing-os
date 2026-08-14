@@ -433,6 +433,56 @@
   .diff-legend .diff-add, .diff-legend .diff-del{font-weight:700; text-decoration:none;}
   .diff-legend .diff-del{text-decoration:line-through;}
 
+  /* ---- SEO insights card (keyword strategy, separate from meta fields) ---- */
+  .seo-insights-card{
+    background:var(--white);
+    border:1.5px solid var(--neutral-15);
+    border-left:4px solid var(--clicksend-blue, #2977FF);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:22px;
+  }
+  .seo-insights-card h3{
+    font-size:13px;
+    margin:0 0 14px 0;
+  }
+  .seo-primary-keyword{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+    font-size:13px;
+  }
+  .seo-primary-keyword .seo-label{font-weight:700; color:var(--navy);}
+  .seo-keyword-pill{
+    display:inline-block;
+    background:var(--neutral-05);
+    color:var(--navy);
+    border-radius:999px;
+    padding:4px 12px;
+    font-weight:700;
+    font-size:12px;
+  }
+  .seo-secondary-keywords{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  .seo-secondary-keywords .seo-keyword-pill{
+    background:transparent;
+    border:1px solid var(--neutral-15);
+    font-weight:600;
+  }
+  .seo-recommendations{
+    margin:0;
+    padding-left:18px;
+    font-size:13px;
+    color:var(--neutral-90);
+  }
+  .seo-recommendations li{margin-bottom:6px;}
+  .seo-recommendations li:last-child{margin-bottom:0;}
+
   /* ---- SEO fields card ---- */
   .seo-card{
     background:var(--white);
@@ -684,7 +734,8 @@ const DOC_FILES = [
   "helpdoc-example-1-rcs-at-clicksend.md",
   "helpdoc-example-2-mps-speed-of-delivery-rcs.md",
   "helpdoc-example-3-choosing-the-right-sender-id.md",
-  "helpdoc-example-4-guide-to-alpha-tags.md"
+  "helpdoc-example-4-guide-to-alpha-tags.md",
+  "seo-keyword-guidelines.md"
 ];
 
 /* =========================================================
@@ -729,7 +780,9 @@ Title as H1 > a few intro paragraphs, no heading needed yet > single divider > o
   "helpdoc-example-3-choosing-the-right-sender-id.md": `# Example: Comparison/decision-guide pattern (Helpdoc)
 Title as H1 > intro > H2 "What's available" with each option (shared numbers, dedicated numbers, alpha tags, own numbers) as a hidden H3 so the accordion isn't cluttered with near-identical nested entries > divider > H2 "Regional examples" with per-country H3s > one callout for a single hard compliance rule > FAQ block at the end.`,
   "helpdoc-example-4-guide-to-alpha-tags.md": `# Example: Step-by-step how-to pattern (Helpdoc)
-Title as H1 > concept H2s (what/when) > divider > numbered step-by-step H2 with an [IMAGE] placed right after the step it shows, not bundled elsewhere > more concept H2s (multi-country use, local registration) > a long reference/allow-list section as plain text rather than forcing it into a table or extra headings. No FAQ needed when the body already answers the likely questions.`
+Title as H1 > concept H2s (what/when) > divider > numbered step-by-step H2 with an [IMAGE] placed right after the step it shows, not bundled elsewhere > more concept H2s (multi-country use, local registration) > a long reference/allow-list section as plain text rather than forcing it into a table or extra headings. No FAQ needed when the body already answers the likely questions.`,
+  "seo-keyword-guidelines.md": `# SEO & keyword optimization guidelines (blog, customer story, helpdoc)
+Intent first, keywords second — never force a term at the cost of natural tone of voice. Draw keywords from ClickSend's actual product/competitive space (SMS API, bulk SMS, MMS, RCS messaging, Sender ID, Alpha Tag, dedicated number, 10DLC, OTP, appointment reminders, CPaaS) rather than generic terms. Primary keyword in H1, first 100 words, one H2, and naturally through the body; secondary/semantic keywords woven into subheadings. One keyword cluster per page. Structure for AI-answer engines: direct one-sentence answers up front, short paragraphs, question-phrased subheadings, lists for sequential/comparative content, FAQ questions mirroring real search phrasing. Per type: blog targets one cluster matched to search intent (how-to/comparison/definitional); customer stories target the use case and outcome, not the customer's name, no invented stats; helpdocs mirror real troubleshooting/support search phrasing since Intercom has no slug field. Never invent search volumes, rankings, competitor stats, internal links, or backlinks.`
 };
 
 let loadedDocs = {};
@@ -786,6 +839,10 @@ function buildSystemPrompt(contentType, toneValue, brevityValue){
   const tov = loadedDocs["clicksend-tov-guidelines.md"] || "";
   const brand = loadedDocs["brand-guidelines.md"] || "";
   const checklist = loadedDocs["content-creation-checklist.md"] || "";
+  const seoGuidelines = loadedDocs["seo-keyword-guidelines.md"] || "";
+
+  const SEO_TYPES = ["blog", "customer-story", "helpdoc"];
+  const isSeoType = SEO_TYPES.includes(contentType);
 
   let templateDoc = "";
   let examplesBlock = "";
@@ -820,10 +877,15 @@ function buildSystemPrompt(contentType, toneValue, brevityValue){
       helpdocExampleFiles.map(f => loadedDocs[f] || "").join("\n\n---\n\n");
   }
 
+  const seoBlock = isSeoType ? `
+
+## SEO & keyword optimization guidelines
+${seoGuidelines}` : "";
+
   return `You are the ClickSend Content Editor — an internal tool that reviews and rewrites marketing and communications content so it's ready to use verbatim, without needing a human copywriter's review pass.
 
 You will be given a content type and a draft. Your job:
-1. Assess the draft against ClickSend's tone of voice, brand guidelines, the content creation checklist, and (where relevant) the structural template and past examples below.
+1. Assess the draft against ClickSend's tone of voice, brand guidelines, the content creation checklist, and (where relevant) the structural template, past examples, and SEO guidelines below.
 2. Identify concrete issues, categorised.
 3. Produce a fully rewritten, ready-to-send version that fixes those issues while preserving the author's original intent, facts, and key messages. Never invent facts, statistics, customer names or claims that weren't in the original draft.
 
@@ -839,6 +901,7 @@ ${checklist}
 ## Structural template for this content type (${contentType})
 ${templateDoc}
 ${examplesBlock}
+${seoBlock}
 
 ## Style dials for this rewrite
 Tone target: "${TONE_LABELS[toneValue]}" (${toneValue}/5 — 1 is playful/casual, 5 is formal/professional). Nudge word choice and register accordingly, but stay inside ClickSend's four brand pillars (empathetic, smart, bold, a little weird) — a more "formal" rewrite should still never sound corporate or condescending, and a more "playful" one should never abandon clarity or professionalism.
@@ -852,17 +915,19 @@ Respond with ONLY valid JSON, no markdown code fences, no preamble, matching thi
   "issues": [
     {"category": "tone" | "structure" | "brand" | "compliance" | "seo", "note": "short, specific description of the issue and why it matters"}
   ],
-  "rewrite": "the full rewritten content, ready to use verbatim${contentType === "helpdoc" ? `, formatted using the Intercom implementation labels from the helpdoc formatting guidelines above ([H1]/[H2]/[H3], [ENTER], [DIVIDER], [CALLOUT], [FAQ]/[EXPANDABLE], [IMAGE: description]) — do not output plain markdown headers for helpdoc content` : `, formatted with plain text line breaks (no markdown headers unless the content type calls for them)`}"${(contentType === "blog" || contentType === "helpdoc") ? `,
+  "rewrite": "the full rewritten content, ready to use verbatim${contentType === "helpdoc" ? `, formatted using the Intercom implementation labels from the helpdoc formatting guidelines above ([H1]/[H2]/[H3], [ENTER], [DIVIDER], [CALLOUT], [FAQ]/[EXPANDABLE], [IMAGE: description]) — do not output plain markdown headers for helpdoc content` : `, formatted with plain text line breaks (no markdown headers unless the content type calls for them)`}"${isSeoType ? `,
   "seo": {
     "metaTitle": "50-60 characters, includes primary keyword",
     "metaDescription": "50-156 characters, includes primary keyword, compelling",
     "urlSlug": "lowercase-hyphenated-slug",
     "keywords": ["3-5 relevant keywords/phrases"],
-    "category": "one relevant category"
+    "category": "one relevant category",
+    "primaryKeyword": "the single primary keyword/phrase this piece should own, drawn from ClickSend's product and topic space per the SEO guidelines",
+    "keywordRecommendations": ["2-4 short, specific, actionable notes on keyword placement or optimization opportunities in this piece — reference actual phrases/sections, not generic advice"]
   }` : ``}
 }
 
-If the draft is already excellent, "issues" can be a short list or empty, and "rewrite" should still be provided as a clean final version. Be specific and concrete in issue notes — reference the actual phrase or section, not generic advice.${(contentType === "blog" || contentType === "helpdoc") ? ` Always include the "seo" object for ${contentType === "blog" ? "blog" : "helpdoc"} content, derived from the rewritten content.` : ``}`;
+If the draft is already excellent, "issues" can be a short list or empty, and "rewrite" should still be provided as a clean final version. Be specific and concrete in issue notes — reference the actual phrase or section, not generic advice.${isSeoType ? ` Always include the "seo" object for ${contentType} content, derived from the rewritten content and grounded in the SEO & keyword optimization guidelines above.` : ``}`;
 }
 
 /* =========================================================
@@ -1006,6 +1071,33 @@ function renderDiffHtml(oldText, newText){
   }).join('');
 }
 
+function renderSeoInsightsCard(seo){
+  if (!seo || (!seo.primaryKeyword && !(seo.keywordRecommendations && seo.keywordRecommendations.length))) return '';
+  const secondary = Array.isArray(seo.keywords) ? seo.keywords.filter(k => k !== seo.primaryKeyword) : [];
+  const recs = Array.isArray(seo.keywordRecommendations) ? seo.keywordRecommendations : [];
+  return `
+    <div class="seo-insights-card">
+      <h3><span>SEO &amp; keyword optimization</span></h3>
+      ${seo.primaryKeyword ? `
+        <div class="seo-primary-keyword">
+          <span class="seo-label">Primary keyword</span>
+          <span class="seo-keyword-pill">${escapeHtml(seo.primaryKeyword)}</span>
+        </div>
+      ` : ''}
+      ${secondary.length ? `
+        <div class="seo-secondary-keywords">
+          ${secondary.map(k => `<span class="seo-keyword-pill">${escapeHtml(k)}</span>`).join('')}
+        </div>
+      ` : ''}
+      ${recs.length ? `
+        <ul class="seo-recommendations">
+          ${recs.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+        </ul>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderSeoCard(seo){
   if (!seo) return '';
   const rows = [
@@ -1050,6 +1142,7 @@ function renderResults(data){
       `).join('') + `</div>`;
   }
 
+  const seoInsightsHtml = renderSeoInsightsCard(data.seo);
   const seoHtml = renderSeoCard(data.seo);
   const diffHtml = renderDiffHtml(lastSubmittedDraft, data.rewrite || '');
 
@@ -1059,6 +1152,7 @@ function renderResults(data){
       <div class="verdict-text">${escapeHtml(data.summary || '')}</div>
     </div>
     ${issuesHtml}
+    ${seoInsightsHtml}
     ${seoHtml}
     <div class="rewrite-box">
       <div class="rewrite-tabs">
