@@ -423,6 +423,18 @@
     color:var(--neutral-60);
   }
   .rewrite-tab.active{background:var(--white); color:var(--navy); box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+
+  /* ---- Translate tab ---- */
+  .translate-row{display:flex; gap:10px; margin-bottom:14px;}
+  .translate-row select{margin-bottom:0; flex:1;}
+  .translate-row .btn{width:auto; padding:11px 20px; flex-shrink:0;}
+  #translateLangCustom{margin-bottom:14px;}
+  .translate-lang-label{
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:var(--navy);
+  }
   .diff-add{color:var(--err); font-weight:600;}
   .diff-del{color:var(--neutral-60); text-decoration:line-through;}
   .diff-legend{
@@ -790,6 +802,9 @@ let docsSource = "loading"; // 'live' | 'fallback'
 let lastSubmittedDraft = "";
 let lastContentType = "";
 let lastResultData = null;
+let lastTranslation = null;
+
+const TRANSLATE_LANGUAGES = ["Spanish", "French", "German", "Portuguese (Brazil)", "Italian", "Dutch", "Japanese", "Simplified Chinese"];
 let auditLog = [];
 
 async function loadDocs(){
@@ -1158,6 +1173,7 @@ function renderResults(data){
       <div class="rewrite-tabs">
         <button class="rewrite-tab active" id="tabChanges">Tracked changes</button>
         <button class="rewrite-tab" id="tabClean">Clean copy</button>
+        <button class="rewrite-tab" id="tabTranslate">Translate</button>
       </div>
       <div id="diffLegendWrap" class="diff-legend">
         <span class="diff-add">Red</span> = added/changed · <span class="diff-del">strikethrough</span> = removed
@@ -1181,6 +1197,33 @@ function renderResults(data){
       </h3>
       <div class="rewrite-content" id="diffContent">${diffHtml}</div>
       <div class="rewrite-content" id="rewriteContent" style="display:none;">${escapeHtml(data.rewrite || '')}</div>
+      <div class="rewrite-content" id="translateTabContent" style="display:none;">
+        <div class="translate-row">
+          <select id="translateLangSelect">
+            <option value="">Choose a language…</option>
+            ${TRANSLATE_LANGUAGES.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('')}
+            <option value="__custom__">Other…</option>
+          </select>
+          <button class="btn" id="translateBtn">Translate</button>
+        </div>
+        <input type="text" id="translateLangCustom" placeholder="Type a language, e.g. Korean" style="display:none;">
+        <div id="translateResultBox" style="display:none;">
+          <h3 style="margin-top:0;">
+            <span class="translate-lang-label" id="translateResultLangLabel"></span>
+            <div class="rewrite-actions">
+              <button class="icon-btn" id="copyTranslateBtn" title="Copy to clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                Copy
+              </button>
+              <button class="icon-btn" id="downloadTranslateBtn" title="Download as .txt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </button>
+            </div>
+          </h3>
+          <div class="rewrite-content" id="translateResultContent"></div>
+        </div>
+      </div>
     </div>
 
     <div class="approve-bar">
@@ -1193,16 +1236,55 @@ function renderResults(data){
   document.getElementById('tabChanges').addEventListener('click', () => {
     document.getElementById('tabChanges').classList.add('active');
     document.getElementById('tabClean').classList.remove('active');
+    document.getElementById('tabTranslate').classList.remove('active');
     document.getElementById('diffContent').style.display = 'block';
     document.getElementById('rewriteContent').style.display = 'none';
+    document.getElementById('translateTabContent').style.display = 'none';
     document.getElementById('diffLegendWrap').style.display = 'block';
   });
   document.getElementById('tabClean').addEventListener('click', () => {
     document.getElementById('tabClean').classList.add('active');
     document.getElementById('tabChanges').classList.remove('active');
+    document.getElementById('tabTranslate').classList.remove('active');
     document.getElementById('rewriteContent').style.display = 'block';
     document.getElementById('diffContent').style.display = 'none';
+    document.getElementById('translateTabContent').style.display = 'none';
     document.getElementById('diffLegendWrap').style.display = 'none';
+  });
+  document.getElementById('tabTranslate').addEventListener('click', () => {
+    document.getElementById('tabTranslate').classList.add('active');
+    document.getElementById('tabChanges').classList.remove('active');
+    document.getElementById('tabClean').classList.remove('active');
+    document.getElementById('translateTabContent').style.display = 'block';
+    document.getElementById('diffContent').style.display = 'none';
+    document.getElementById('rewriteContent').style.display = 'none';
+    document.getElementById('diffLegendWrap').style.display = 'none';
+  });
+
+  document.getElementById('translateLangSelect').addEventListener('change', (e) => {
+    document.getElementById('translateLangCustom').style.display = e.target.value === '__custom__' ? 'block' : 'none';
+  });
+  document.getElementById('translateBtn').addEventListener('click', handleTranslate);
+  document.getElementById('copyTranslateBtn').addEventListener('click', () => {
+    if (!lastTranslation) return;
+    navigator.clipboard.writeText(lastTranslation.text || '').then(() => {
+      const btn = document.getElementById('copyTranslateBtn');
+      const original = btn.innerHTML;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1800);
+    });
+  });
+  document.getElementById('downloadTranslateBtn').addEventListener('click', () => {
+    if (!lastTranslation) return;
+    const blob = new Blob([lastTranslation.text || ''], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const langSlug = (lastTranslation.language || 'translated').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    a.download = `clicksend-${lastContentType}-${langSlug}-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   });
 
   document.getElementById('copyBtn').addEventListener('click', () => {
@@ -1413,6 +1495,95 @@ async function handleSubmit(){
 }
 
 submitBtn.addEventListener('click', handleSubmit);
+
+/* ----------------------------------------
+   Translation of the approved EN rewrite
+---------------------------------------- */
+function buildTranslatePrompt(languageName, contentType){
+  const isHelpdoc = contentType === "helpdoc";
+  return `You are a professional localization editor for ClickSend, a CPaaS / business messaging company (SMS API, RCS, MMS, Sender ID, Alpha Tag, 10DLC, OTP, CPaaS).
+
+You will be given a piece of marketing or support content that has ALREADY been reviewed and approved in English against ClickSend's brand and tone guidelines. Your job is to translate it into ${languageName} so it reads as if it were natively written for a ${languageName}-speaking audience — not a literal, word-for-word translation.
+
+Rules:
+1. Preserve meaning, structure, paragraph breaks, and any lists.
+2. Keep ClickSend's tone equivalent in ${languageName}: empathetic, smart, bold, a little weird — never stiff, robotic, or overly formal unless the source is. Adapt idioms rather than translating them literally.
+3. Keep product and feature names in English unless there is a well-established localized term in ${languageName}: SMS API, RCS, MMS, Sender ID, Alpha Tag, 10DLC, OTP, CPaaS.
+4. Keep any calls-to-action natural and persuasive in ${languageName}, not just translated word-for-word.
+${isHelpdoc ? `5. This content is formatted with Intercom implementation labels ([H1], [H2], [H3], [ENTER], [DIVIDER], [CALLOUT], [FAQ], [EXPANDABLE], [IMAGE: ...]). Keep every label exactly as-is and in the same position — translate only the human-readable text between/after the labels.` : `5. Keep the same formatting style as the source (no markdown headers unless the source already uses them).`}
+6. Do not add commentary, notes, translator remarks, or explanations of any kind — output only the translated content itself.
+
+Respond ONLY with raw JSON, no markdown code fences, no preamble, in exactly this shape:
+{"translatedText": "the full translated content, ready to use verbatim"}`;
+}
+
+async function handleTranslate(){
+  const select = document.getElementById('translateLangSelect');
+  const customInput = document.getElementById('translateLangCustom');
+  let language = select.value;
+  if (language === '__custom__'){
+    language = customInput.value.trim();
+  }
+  if (!language){
+    (select.value === '__custom__' ? customInput : select).focus();
+    return;
+  }
+  if (!lastResultData || !lastResultData.rewrite){
+    return;
+  }
+
+  const btn = document.getElementById('translateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Translating…';
+
+  const resultBox = document.getElementById('translateResultBox');
+  const resultContent = document.getElementById('translateResultContent');
+  resultBox.style.display = 'block';
+  document.getElementById('translateResultLangLabel').textContent = language;
+  resultContent.innerHTML = `<span style="color:var(--neutral-60);">Translating into ${escapeHtml(language)}…</span>`;
+
+  try {
+    const systemPrompt = buildTranslatePrompt(language, lastContentType);
+    const requestBody = {
+      system: systemPrompt,
+      messages: [
+        { role: "user", content: lastResultData.rewrite }
+      ]
+    };
+
+    let data;
+    if (WORKER_URL) {
+      const response = await fetch(`${WORKER_URL}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      });
+      data = await response.json();
+    } else {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 4000, ...requestBody })
+      });
+      data = await response.json();
+    }
+
+    const textBlock = (data.content || []).find(b => b.type === "text");
+    if (!textBlock) throw new Error("No text response from model");
+
+    let cleaned = textBlock.text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    const parsed = JSON.parse(cleaned);
+
+    lastTranslation = { language, text: parsed.translatedText || '' };
+    resultContent.innerHTML = escapeHtml(lastTranslation.text);
+
+  } catch (err) {
+    resultContent.innerHTML = `<span style="color:var(--err);">Translation failed: ${escapeHtml(err.message || String(err))}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Translate';
+  }
+}
 </script>
 
 </body>
