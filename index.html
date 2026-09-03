@@ -1969,7 +1969,7 @@ async function loadIntelSnapshot(){
     const res = await fetch(WORKER_URL + '/intel/snapshot');
     if (!res.ok){
       metaEl.textContent = res.status === 404
-        ? 'Worker route not deployed yet.'
+        ? 'No snapshot yet — click "Refresh now" to run the first one.'
         : 'Could not load snapshot (error ' + res.status + ').';
       return;
     }
@@ -1980,56 +1980,47 @@ async function loadIntelSnapshot(){
   }
 }
 
+// The manual refresh drives one step per request — one competitor (or the
+// ClickSend baseline, or the final synthesis) at a time. Each request
+// finishes in seconds, so nothing relies on a background job surviving
+// past Cloudflare's 30-second waitUntil ceiling. The monthly cron run is
+// unaffected by any of this — it uses a single long-running scheduled()
+// invocation server-side, no browser involved.
 async function refreshIntelAll(){
   const btn = document.getElementById('intelRefreshBtn');
+  const STEP_PACING_MS = 8000; // spacing between web-search calls
   btn.disabled = true;
   btn.textContent = '↻ Starting…';
+
   try{
-    const res = await fetch(WORKER_URL + '/intel/refresh-all', { method: 'POST' });
-    if (res.status === 409){
-      btn.textContent = '↻ Already running…';
-    } else if (!res.ok && res.status !== 202){
-      throw new Error('Refresh failed (status ' + res.status + ')');
+    const startRes = await fetch(WORKER_URL + '/intel/refresh-all', { method: 'POST' });
+    if (!startRes.ok) throw new Error('Could not start refresh (status ' + startRes.status + ')');
+    const { totalSteps } = await startRes.json();
+
+    let done = false;
+    while (!done){
+      await new Promise(r => setTimeout(r, STEP_PACING_MS));
+      const stepRes = await fetch(WORKER_URL + '/intel/refresh-step', { method: 'POST' });
+      if (!stepRes.ok){
+        const errBody = await stepRes.json().catch(() => ({}));
+        throw new Error(errBody.error || ('Step failed (status ' + stepRes.status + ')'));
+      }
+      const stepData = await stepRes.json();
+      if (stepData.done){
+        renderIntelSnapshot(stepData.snapshot);
+        intelLoaded = true;
+        intelHistoryLoaded = false; // a fresh archive entry may now exist
+        done = true;
+      } else {
+        btn.textContent = `↻ ${stepData.progress} (${stepData.stepIndex}/${totalSteps})`;
+      }
     }
-    await pollIntelStatus(btn);
   } catch(e){
-    alert('Refresh failed: ' + (e.message || e));
+    alert('Refresh failed: ' + (e.message || e) + '\n\nWhatever completed before this point is not saved — click Refresh now to start over.');
+  } finally {
     btn.disabled = false;
     btn.textContent = '↻ Refresh now';
   }
-}
-
-// The job runs server-side for several minutes (18 competitors + ClickSend,
-// spaced ~8s apart) — this polls /intel/status rather than holding one
-// long HTTP request open.
-async function pollIntelStatus(btn){
-  const POLL_MS = 10000;
-  const MAX_POLLS = 60; // ~10 minutes ceiling
-  for (let i = 0; i < MAX_POLLS; i++){
-    await new Promise(r => setTimeout(r, POLL_MS));
-    let status;
-    try{
-      const res = await fetch(WORKER_URL + '/intel/status');
-      status = res.ok ? await res.json() : { state: 'unknown' };
-    } catch(e){
-      status = { state: 'unknown' };
-    }
-
-    if (status.state === 'running'){
-      btn.textContent = '↻ ' + (status.progress || 'Running…');
-      continue;
-    }
-    if (status.state === 'error'){
-      alert('Refresh failed: ' + (status.error || 'unknown error'));
-      break;
-    }
-    // idle (or unknown after a running state) — assume finished, reload the snapshot
-    await loadIntelSnapshot();
-    intelHistoryLoaded = false; // a fresh archive entry may now exist
-    break;
-  }
-  btn.disabled = false;
-  btn.textContent = '↻ Refresh now';
 }
 
 function renderIntelSnapshot(data){
