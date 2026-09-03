@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClickSend Content Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#15203B;
+    --blue:#2977FF;
+    --blue-15:#E6F0FF;
+    --blue-05:#F7FAFF;
+    --yellow:#FFB829;
+    --white:#FFFFFF;
+    --neutral-90:#1A2126;
+    --neutral-60:#626C73;
+    --neutral-30:#C4CCD1;
+    --neutral-15:#E6EBED;
+    --neutral-05:#F7F9FA;
+    --ok:#1E9E6B;
+    --warn:#D9822B;
+    --err:#D64545;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Open Sans', sans-serif;
+    background:var(--neutral-05);
+    color:var(--neutral-90);
+  }
+  h1,h2,h3,.headline{
+    font-family:'Montserrat', sans-serif;
+    color:var(--navy);
+  }
+
+  /* ---- Header ---- */
+  header{
+    background:var(--navy);
+    color:var(--white);
+    padding:22px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:8px;
+    background:var(--blue);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Montserrat',sans-serif;font-weight:800;font-size:18px;
+    flex-shrink:0;
+  }
+  .brand h1{
+    color:var(--white);
+    font-size:19px;
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .brand .sub{
+    font-size:12.5px;
+    color:#AEC4EE;
+    margin-top:2px;
+  }
+  .docs-status{
+    font-size:12.5px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,0.06);
+    padding:8px 14px;
+    border-radius:999px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--neutral-30);flex-shrink:0;}
+  .dot.live{background:var(--ok);}
+  .dot.fallback{background:var(--yellow);}
+  .dot.error{background:var(--err);}
+
+  /* ---- Layout ---- */
+  main{
+    max-width:1180px;
+    margin:0 auto;
+    padding:32px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:24px;
+  }
+  @media(min-width:920px){
+    main{grid-template-columns: 420px 1fr;}
+  }
+
+  .panel{
+    background:var(--white);
+    border:1px solid var(--neutral-15);
+    border-radius:14px;
+    padding:24px;
+  }
+  .panel h2{
+    font-size:15px;
+    margin:0 0 16px 0;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    color:var(--blue);
+  }
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--navy);
+    margin-bottom:6px;
+  }
+  select, textarea, input[type=text]{
+    width:100%;
+    font-family:'Open Sans',sans-serif;
+    font-size:14px;
+    padding:11px 12px;
+    border:1.5px solid var(--neutral-15);
+    border-radius:9px;
+    background:var(--white);
+    color:var(--neutral-90);
+    margin-bottom:18px;
+    resize:vertical;
+  }
+  select:focus, textarea:focus, input:focus{
+    outline:none;
+    border-color:var(--blue);
+  }
+  textarea{min-height:260px; line-height:1.5;}
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--blue);
+    color:var(--white);
+    border:none;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:13px 22px;
+    border-radius:9px;
+    cursor:pointer;
+    width:100%;
+    transition:background 0.15s ease;
+  }
+  .btn:hover{background:#1F63D9;}
+  .btn:disabled{background:var(--neutral-30); cursor:not-allowed;}
+
+  /* ---- Delivery-style stepper (signature element) ---- */
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:0;
+    margin-bottom:22px;
+    font-family:'Montserrat',sans-serif;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:0.4px;
+    text-transform:uppercase;
+  }
+  .step{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--neutral-30);
+  }
+  .step .bubble{
+    width:22px;height:22px;border-radius:50%;
+    border:2px solid var(--neutral-30);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;
+    background:var(--white);
+  }
+  .step.active{color:var(--navy);}
+  .step.active .bubble{border-color:var(--blue); background:var(--blue); color:white;}
+  .step.done{color:var(--ok);}
+  .step.done .bubble{border-color:var(--ok); background:var(--ok); color:white;}
+  .step-line{
+    flex:1;height:2px;background:var(--neutral-30);margin:0 6px;
+    min-width:20px;
+  }
+  .step-line.done{background:var(--ok);}
+
+  /* ---- Results ---- */
+  .placeholder{
+    color:var(--neutral-60);
+    font-size:14px;
+    padding:40px 20px;
+    text-align:center;
+    line-height:1.6;
+  }
+  .placeholder .icon{font-size:30px; margin-bottom:10px;}
+
+  .verdict-card{
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:22px;
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+  }
+  .verdict-card.ready{background:#EAF8F1; border:1.5px solid var(--ok);}
+  .verdict-card.close{background:#FFF6E8; border:1.5px solid var(--yellow);}
+  .verdict-card.needs-work{background:#FDEDED; border:1.5px solid var(--err);}
+  .verdict-badge{
+    font-family:'Montserrat',sans-serif;
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    padding:5px 11px;
+    border-radius:999px;
+    color:white;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .verdict-card.ready .verdict-badge{background:var(--ok);}
+  .verdict-card.close .verdict-badge{background:var(--yellow);}
+  .verdict-card.needs-work .verdict-badge{background:var(--err);}
+  .verdict-text{font-size:14px; line-height:1.5; color:var(--neutral-90);}
+
+  .issues-section{margin-bottom:24px;}
+  .issue{
+    border-left:3px solid var(--neutral-30);
+    padding:10px 14px;
+    margin-bottom:10px;
+    background:var(--neutral-05);
+    border-radius:0 8px 8px 0;
+  }
+  .issue.tone{border-color:var(--blue);}
+  .issue.structure{border-color:var(--yellow);}
+  .issue.brand{border-color:#A35CE0;}
+  .issue.compliance{border-color:var(--err);}
+  .issue.seo{border-color:#1E9E6B;}
+  .issue-cat{
+    font-family:'Montserrat',sans-serif;
+    font-size:10.5px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color:var(--neutral-60);
+    margin-bottom:4px;
+  }
+  .issue-note{font-size:13.5px; line-height:1.5;}
+
+  .rewrite-box{
+    background:var(--blue-05);
+    border:1.5px solid var(--blue-15);
+    border-radius:12px;
+    padding:22px;
+  }
+  .rewrite-box h3{
+    font-size:14px;
+    margin:0 0 14px 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .rewrite-content{
+    font-size:14.5px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    color:var(--neutral-90);
+  }
+  .copy-btn{
+    background:var(--navy);
+    color:white;
+    border:none;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    padding:7px 14px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:#243156;}
+  .copy-btn.copied{background:var(--ok);}
+
+  .error-box{
+    background:#FDEDED;
+    border:1.5px solid var(--err);
+    border-radius:10px;
+    padding:16px 18px;
+    font-size:13.5px;
+    color:#7A1F1F;
+    line-height:1.5;
+  }
+
+  footer{
+    text-align:center;
+    padding:24px;
+    font-size:12px;
+    color:var(--neutral-60);
+  }
+
+  /* ---- Upload zone ---- */
+  .upload-zone{
+    border:1.5px dashed var(--neutral-30);
+    border-radius:10px;
+    padding:16px;
+    text-align:center;
+    font-size:13px;
+    color:var(--neutral-60);
+    margin-bottom:14px;
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .upload-zone.dragover{
+    border-color:var(--blue);
+    background:var(--blue-05);
+    color:var(--blue);
+  }
+  .upload-zone .link-btn{
+    background:none;border:none;color:var(--blue);font-weight:700;
+    cursor:pointer;text-decoration:underline;padding:0;font-size:13px;font-family:inherit;
+  }
+  .file-badge{
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--blue-15);
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:12.5px;
+    color:var(--navy);
+    margin-bottom:14px;
+  }
+  .file-badge button{
+    background:none;border:none;color:var(--neutral-60);
+    cursor:pointer;font-size:15px;line-height:1;padding:0 0 0 10px;
+  }
+  .file-error{
+    color:var(--err);
+    font-size:12.5px;
+    margin-top:-8px;
+    margin-bottom:14px;
+  }
+
+  .counter{
+    font-size:11.5px;
+    color:var(--neutral-60);
+    text-align:right;
+    margin-top:-12px;
+    margin-bottom:16px;
+  }
+  .counter.warn{color:var(--warn); font-weight:600;}
+
+  /* ---- Dials ---- */
+  .dial-group{margin-bottom:18px;}
+  .dial-group .dial-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:6px;
+  }
+  .dial-group label{margin-bottom:0;}
+  .dial-value{
+    font-size:12px;
+    font-weight:700;
+    color:var(--blue);
+  }
+  .dial-group input[type=range]{
+    width:100%;
+    accent-color:var(--blue);
+    margin-bottom:4px;
+  }
+  .dial-scale{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--neutral-60);
+  }
+
+  /* ---- Icon buttons in rewrite box ---- */
+  .rewrite-actions{display:flex; gap:8px;}
+  .icon-btn{
+    background:var(--navy);
+    color:white;
+    border:none;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:7px;
+    cursor:pointer;
+  }
+  .icon-btn:hover{background:#243156;}
+  .icon-btn.copied{background:var(--ok);}
+  .icon-btn svg{width:13px;height:13px;flex-shrink:0;}
+
+  /* ---- Diff / tracked changes ---- */
+  .rewrite-tabs{
+    display:flex;
+    gap:4px;
+    margin-bottom:14px;
+    background:var(--neutral-05);
+    border-radius:8px;
+    padding:3px;
+    width:fit-content;
+  }
+  .rewrite-tab{
+    background:none;
+    border:none;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    padding:7px 13px;
+    border-radius:6px;
+    cursor:pointer;
+    color:var(--neutral-60);
+  }
+  .rewrite-tab.active{background:var(--white); color:var(--navy); box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+
+  /* ---- Translate tab ---- */
+  .translate-row{display:flex; gap:10px; margin-bottom:14px;}
+  .translate-row select{margin-bottom:0; flex:1;}
+  .translate-row .btn{width:auto; padding:11px 20px; flex-shrink:0;}
+  #translateLangCustom{margin-bottom:14px;}
+  .translate-lang-label{
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:var(--navy);
+  }
+  .diff-add{color:var(--err); font-weight:600;}
+  .diff-del{color:var(--neutral-60); text-decoration:line-through;}
+  .diff-legend{
+    font-size:11.5px;
+    color:var(--neutral-60);
+    margin-bottom:10px;
+  }
+  .diff-legend .diff-add, .diff-legend .diff-del{font-weight:700; text-decoration:none;}
+  .diff-legend .diff-del{text-decoration:line-through;}
+
+  /* ---- SEO insights card (keyword strategy, separate from meta fields) ---- */
+  .seo-insights-card{
+    background:var(--white);
+    border:1.5px solid var(--neutral-15);
+    border-left:4px solid var(--clicksend-blue, #2977FF);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:22px;
+  }
+  .seo-insights-card h3{
+    font-size:13px;
+    margin:0 0 14px 0;
+  }
+  .seo-primary-keyword{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+    font-size:13px;
+  }
+  .seo-primary-keyword .seo-label{font-weight:700; color:var(--navy);}
+  .seo-keyword-pill{
+    display:inline-block;
+    background:var(--neutral-05);
+    color:var(--navy);
+    border-radius:999px;
+    padding:4px 12px;
+    font-weight:700;
+    font-size:12px;
+  }
+  .seo-secondary-keywords{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:14px;
+  }
+  .seo-secondary-keywords .seo-keyword-pill{
+    background:transparent;
+    border:1px solid var(--neutral-15);
+    font-weight:600;
+  }
+  .seo-recommendations{
+    margin:0;
+    padding-left:18px;
+    font-size:13px;
+    color:var(--neutral-90);
+  }
+  .seo-recommendations li{margin-bottom:6px;}
+  .seo-recommendations li:last-child{margin-bottom:0;}
+
+  /* ---- SEO fields card ---- */
+  .seo-card{
+    background:var(--white);
+    border:1.5px solid var(--neutral-15);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:22px;
+  }
+  .seo-card h3{
+    font-size:13px;
+    margin:0 0 14px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .seo-row{
+    display:grid;
+    grid-template-columns:120px 1fr;
+    gap:10px;
+    font-size:13px;
+    padding:8px 0;
+    border-bottom:1px solid var(--neutral-05);
+  }
+  .seo-row:last-child{border-bottom:none;}
+  .seo-row .seo-label{font-weight:700; color:var(--navy);}
+  .seo-row .seo-val{color:var(--neutral-90); word-break:break-word;}
+
+  /* ---- Audit log panel ---- */
+  .audit-panel{
+    background:var(--white);
+    border:1px solid var(--neutral-15);
+    border-radius:14px;
+    padding:24px;
+    margin-top:24px;
+  }
+  .audit-panel h2{
+    font-size:15px;
+    margin:0 0 4px 0;
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    color:var(--blue);
+  }
+  .audit-note{font-size:12px; color:var(--neutral-60); margin-bottom:16px;}
+  .approve-bar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    background:var(--blue-05);
+    border:1px solid var(--blue-15);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:20px;
+  }
+  .approve-bar input[type=text]{
+    margin:0;
+    max-width:220px;
+    flex:1;
+  }
+  .approve-btn{
+    background:var(--ok);
+    color:white;
+    border:none;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    padding:10px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .approve-btn:disabled{background:var(--neutral-30); cursor:default;}
+  .approved-tag{
+    font-size:12.5px;
+    color:var(--ok);
+    font-weight:700;
+  }
+  table.audit-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+  }
+  table.audit-table th{
+    text-align:left;
+    font-family:'Montserrat',sans-serif;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+    color:var(--neutral-60);
+    padding:8px 10px;
+    border-bottom:2px solid var(--neutral-15);
+  }
+  table.audit-table td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--neutral-05);
+  }
+  .audit-empty{
+    color:var(--neutral-60);
+    font-size:13px;
+    padding:16px 0;
+  }
+  .export-csv-btn{
+    background:var(--navy);
+    color:white;
+    border:none;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    padding:8px 14px;
+    border-radius:7px;
+    cursor:pointer;
+    margin-top:14px;
+  }
+
+  /* ---- Tab navigation ---- */
+  .tab-nav{
+    background:var(--white);
+    border-bottom:1.5px solid var(--neutral-15);
+    padding:0 32px;
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+  }
+  .tab-nav-btn{
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.2px;
+    color:var(--neutral-60);
+    background:none;
+    border:none;
+    border-bottom:3px solid transparent;
+    padding:16px 18px 13px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+    transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  .tab-nav-btn:hover{color:var(--navy);}
+  .tab-nav-btn.active{color:var(--navy); border-bottom-color:var(--blue);}
+  .tab-nav-badge{
+    font-family:'Open Sans',sans-serif;
+    font-weight:600;
+    font-size:10px;
+    letter-spacing:0.3px;
+    text-transform:uppercase;
+    color:var(--neutral-60);
+    background:var(--neutral-15);
+    padding:2px 7px;
+    border-radius:999px;
+  }
+
+  /* ---- Tab panels ---- */
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ---- Coming soon card ---- */
+  .panel.coming-soon{
+    max-width:640px;
+    margin:32px auto;
+    padding:48px 40px;
+    text-align:center;
+  }
+  .coming-soon .icon{font-size:30px; margin-bottom:14px;}
+  .coming-soon h2{
+    font-size:20px;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--navy);
+    margin-bottom:10px;
+  }
+  .coming-soon p{
+    color:var(--neutral-60);
+    font-size:14px;
+    line-height:1.6;
+    margin:0 0 20px;
+  }
+  .coming-soon ul{
+    text-align:left;
+    display:inline-block;
+    margin:0 auto;
+    padding-left:20px;
+    color:var(--neutral-90);
+    font-size:13.5px;
+    line-height:1.9;
+  }
+  .coming-soon .tag{
+    display:inline-block;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--blue);
+    background:var(--blue-15);
+    padding:4px 12px;
+    border-radius:999px;
+    margin-bottom:16px;
+  }
+
+  /* ---- Competitive Intel ---- */
+  .intel-header-panel{padding:20px 24px;}
+  .intel-header-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .intel-header-row h2{margin:0 0 4px; text-transform:none; letter-spacing:0; font-size:17px; color:var(--navy);}
+  .intel-meta{font-size:12.5px; color:var(--neutral-60);}
+  .intel-header-actions{display:flex; gap:8px;}
+  .btn-secondary{
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:9px 16px;
+    border-radius:8px;
+    border:1.5px solid var(--neutral-15);
+    background:var(--white);
+    color:var(--navy);
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .btn-secondary:hover{border-color:var(--blue); background:var(--blue-05);}
+  .btn-secondary:disabled{color:var(--neutral-30); cursor:not-allowed; border-color:var(--neutral-15); background:var(--neutral-05);}
+  .btn-sm{padding:6px 12px; font-size:11.5px;}
+
+  .intel-banner{margin-top:16px;}
+  .intel-banner-label{
+    font-family:'Montserrat',sans-serif;
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--neutral-60);
+    margin-bottom:8px;
+  }
+  .intel-banner-text{font-size:14px; line-height:1.7; color:var(--neutral-90);}
+  .intel-banner-success{background:#EAF8F1; border-color:var(--ok);}
+  .intel-banner-success .intel-banner-label{color:var(--ok);}
+  .intel-opp-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; font-size:14px; color:var(--neutral-90);}
+  .intel-opp-list li::before{content:'→ '; color:var(--ok); font-weight:700;}
+
+  .intel-cs-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:700px){.intel-cs-grid{grid-template-columns:1fr;}}
+  .intel-cs-card{border-radius:10px; padding:16px 18px; font-size:13.5px; line-height:1.6; color:var(--neutral-90);}
+  .intel-cs-love{background:#EAF8F1; border:1.5px solid var(--ok);}
+  .intel-cs-gaps{background:#FFF6E8; border:1.5px solid var(--yellow);}
+  .intel-cs-label{
+    font-family:'Montserrat',sans-serif;
+    font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
+    margin-bottom:8px;
+  }
+  .intel-cs-love .intel-cs-label{color:var(--ok);}
+  .intel-cs-gaps .intel-cs-label{color:var(--warn);}
+
+  .intel-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;}
+  .intel-card{border:1px solid var(--neutral-15); border-radius:10px; padding:14px 16px; background:var(--white);}
+  .intel-card-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .intel-card-name{font-family:'Montserrat',sans-serif; font-weight:700; font-size:13.5px; color:var(--navy);}
+  .intel-sentiment{font-size:9.5px; font-weight:800; letter-spacing:0.4px; text-transform:uppercase; padding:3px 9px; border-radius:999px; white-space:nowrap;}
+  .intel-sentiment.positive{background:#EAF8F1; color:var(--ok);}
+  .intel-sentiment.mixed{background:#FFF6E8; color:var(--warn);}
+  .intel-sentiment.negative{background:#FDEDED; color:var(--err);}
+  .intel-sentiment.unknown{background:var(--neutral-15); color:var(--neutral-60);}
+  .intel-card-body{font-size:12.5px; line-height:1.6; color:var(--neutral-60);}
+  .intel-card-opp{margin-top:8px; padding:8px 10px; background:var(--blue-05); border-left:2px solid var(--blue); border-radius:0 6px 6px 0; font-size:12px; color:var(--navy); line-height:1.5;}
+
+  .intel-quotes{display:flex; flex-direction:column; gap:10px;}
+  .intel-quote-card{border:1px solid var(--neutral-15); border-radius:10px; padding:14px 16px; background:var(--white);}
+  .intel-quote-meta{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+  .intel-quote-competitor{font-family:'Montserrat',sans-serif; font-weight:700; font-size:12.5px; color:var(--navy);}
+  .intel-quote-source{font-size:11px; color:var(--neutral-60);}
+  .intel-quote-text{font-size:13.5px; line-height:1.6; color:var(--neutral-90); font-style:italic; border-left:2px solid var(--neutral-15); padding-left:12px;}
+  .intel-quote-insight{margin-top:8px; font-size:12px; color:var(--ok); display:flex; gap:6px;}
+  .intel-quote-insight .label{font-weight:800; text-transform:uppercase; font-size:10px; letter-spacing:0.4px; white-space:nowrap;}
+
+  .intel-history-item{padding:10px 0; border-bottom:1px solid var(--neutral-15); display:flex; align-items:center; justify-content:space-between; font-size:13px; gap:10px;}
+  .intel-history-item:last-child{border-bottom:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="mark">CS</div>
+    <div>
+      <h1>ClickSend Content Editor</h1>
+      <div class="sub">Vet &amp; rewrite against brand, tone and past examples</div>
+    </div>
+  </div>
+  <div class="docs-status" id="docsStatus">
+    <span class="dot" id="docsDot"></span>
+    <span id="docsStatusText">Loading guidelines…</span>
+  </div>
+</header>
+
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-nav-btn" data-tab="intel" onclick="switchTab('intel')">Competitive Intel</button>
+  <button class="tab-nav-btn" data-tab="seo" onclick="switchTab('seo')">SEO Content Engine <span class="tab-nav-badge">Soon</span></button>
+  <button class="tab-nav-btn" data-tab="creator" onclick="switchTab('creator')">Content Creator <span class="tab-nav-badge">Soon</span></button>
+  <button class="tab-nav-btn active" data-tab="editor" onclick="switchTab('editor')">Content Editor</button>
+</nav>
+
+<div id="tab-editor" class="tab-panel active">
+<main>
+  <section class="panel">
+    <h2>Submit content</h2>
+
+    <label for="contentType">Content type</label>
+    <select id="contentType">
+      <option value="blog">Blog article</option>
+      <option value="customer-story">Customer story / case study</option>
+      <option value="email">Customer service email</option>
+      <option value="video">Video script</option>
+      <option value="helpdoc">Helpdoc / support article</option>
+      <option value="other">Other / general</option>
+    </select>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".docx,.pdf,.txt,.md" hidden>
+      📄 Drag a .docx, .pdf, .txt or .md file here, or <button type="button" class="link-btn" id="browseBtn">browse</button>
+    </div>
+    <div class="file-badge" id="fileBadge">
+      <span id="fileBadgeName"></span>
+      <button type="button" id="clearFileBtn" title="Remove file">✕</button>
+    </div>
+    <div class="file-error" id="fileError" style="display:none;"></div>
+
+    <label for="draft">Or paste your draft directly</label>
+    <textarea id="draft" placeholder="Paste your blog post, email, script, helpdoc or article draft here..."></textarea>
+    <div class="counter" id="counter">0 words</div>
+
+    <div class="dial-group">
+      <div class="dial-head">
+        <label>Tone</label>
+        <span class="dial-value" id="toneLabel">On-brand default</span>
+      </div>
+      <input type="range" id="toneDial" min="1" max="5" value="3">
+      <div class="dial-scale"><span>Playful</span><span>Formal</span></div>
+    </div>
+
+    <div class="dial-group">
+      <div class="dial-head">
+        <label>Brevity</label>
+        <span class="dial-value" id="brevityLabel">Balanced</span>
+      </div>
+      <input type="range" id="brevityDial" min="1" max="5" value="3">
+      <div class="dial-scale"><span>Punchy</span><span>Detailed</span></div>
+    </div>
+
+    <button class="btn" id="submitBtn">Review &amp; rewrite</button>
+  </section>
+
+  <section class="panel" id="resultsPanel">
+    <h2>Result</h2>
+
+    <div class="stepper" id="stepper">
+      <div class="step active" data-step="1"><div class="bubble">1</div>Submitted</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step" data-step="2"><div class="bubble">2</div>Reviewed</div>
+      <div class="step-line" id="line2"></div>
+      <div class="step" data-step="3"><div class="bubble">3</div>Ready</div>
+    </div>
+
+    <div id="resultsBody">
+      <div class="placeholder">
+        <div class="icon">✍️</div>
+        Paste a draft and hit "Review &amp; rewrite" to get a brand and tone check, plus a ready-to-use rewrite.
+      </div>
+    </div>
+  </section>
+</main>
+
+<section class="audit-panel">
+  <h2>Session audit log</h2>
+  <div class="audit-note" id="auditNote">Self-approval log. Once WORKER_URL is set, this is a shared team log stored in Cloudflare KV — until then, it's local to this browser session only.</div>
+  <div id="auditTableWrap">
+    <div class="audit-empty">No approvals logged yet this session.</div>
+  </div>
+</section>
+</div>
+
+<div id="tab-creator" class="tab-panel">
+  <section class="panel coming-soon">
+    <div class="tag">Building next</div>
+    <div class="icon">🎙️</div>
+    <h2>Content Creator</h2>
+    <p>Run a voice interview, and get a first draft out the other side — blog post, social post, or case study — vetted through the same brand and tone guidelines as the Editor tab.</p>
+    <ul>
+      <li>Voice-based interview flow</li>
+      <li>Fans out into multiple content types at once</li>
+      <li>Vetted through existing brand guidelines</li>
+      <li>Translate into any supported language</li>
+    </ul>
+  </section>
+</div>
+
+<div id="tab-intel" class="tab-panel">
+
+  <section class="panel intel-header-panel">
+    <div class="intel-header-row">
+      <div>
+        <h2>Competitive intelligence</h2>
+        <div class="intel-meta" id="intelLastUpdated">Loading…</div>
+      </div>
+      <div class="intel-header-actions">
+        <button class="btn-secondary btn-sm" id="intelDownloadBtn" onclick="downloadIntelSnapshot()" disabled>⤓ Download .md</button>
+        <button class="btn-secondary btn-sm" id="intelHistoryToggleBtn" onclick="toggleIntelHistory()">View history</button>
+        <button class="btn-secondary btn-sm" id="intelRefreshBtn" onclick="refreshIntelAll()">↻ Refresh now</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="intelHistoryPanel" style="display:none;">
+    <h2>Monthly snapshots</h2>
+    <div id="intelHistoryList" class="placeholder">Loading…</div>
+  </section>
+
+  <section class="panel intel-banner">
+    <div class="intel-banner-label">Strategic digest · bottom line</div>
+    <div class="intel-banner-text" id="intelDigestText">No snapshot yet — run a refresh to generate one.</div>
+  </section>
+
+  <section class="panel intel-banner">
+    <div class="intel-banner-label">Market summary</div>
+    <div class="intel-banner-text" id="intelSummaryText">No data yet.</div>
+  </section>
+
+  <section class="panel intel-banner intel-banner-success" id="intelOppsBanner" style="display:none;">
+    <div class="intel-banner-label">↗ ClickSend positioning opportunities</div>
+    <ul class="intel-opp-list" id="intelOppsList"></ul>
+  </section>
+
+  <section class="panel">
+    <h2>ClickSend baseline</h2>
+    <div class="intel-cs-grid">
+      <div class="intel-cs-card intel-cs-love">
+        <div class="intel-cs-label">✓ What customers love</div>
+        <div id="intelCsLove">No data yet.</div>
+      </div>
+      <div class="intel-cs-card intel-cs-gaps">
+        <div class="intel-cs-label">⚠ Gaps &amp; complaints</div>
+        <div id="intelCsGaps">No data yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Competitor summaries</h2>
+    <div class="intel-grid" id="intelCompetitorGrid"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Market quotes <span class="tab-nav-badge" id="intelQuoteCount">0</span></h2>
+    <div class="intel-quotes" id="intelQuotesContainer">
+      <div class="placeholder">No quotes yet.</div>
+    </div>
+  </section>
+
+</div>
+
+<div id="tab-seo" class="tab-panel">
+  <section class="panel coming-soon">
+    <div class="tag">Coming soon</div>
+    <div class="icon">🧭</div>
+    <h2>SEO Content Engine</h2>
+    <p>Turns a competitive gap or target keyword into a structured content brief — outline, angle, suggested format — then hands it to the Editor or Content Creator tab depending on what the piece needs.</p>
+    <ul>
+      <li>Keyword &amp; gap-driven briefs</li>
+      <li>One-click handoff to Editor or Creator</li>
+      <li>Built for AEO / GEO citability</li>
+    </ul>
+  </section>
+</div>
+
+<footer>
+  ClickSend Marketing OS · Guidelines pulled live from GitHub
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+<script>
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+/* =========================================================
+   CONFIG — update these if the repo/branch/path ever changes
+   ========================================================= */
+const GITHUB_OWNER = "rverliefde";
+const GITHUB_REPO = "marketing-os";
+const GITHUB_BRANCH = "docs";
+const DOCS_PATH = "";
+
+// Once your Cloudflare Worker is deployed, paste its URL here, e.g.
+// "https://clicksend-content-editor.YOUR-SUBDOMAIN.workers.dev"
+// Leave blank to keep testing directly against the Anthropic API here in Claude
+// (audit log will stay session-only, in-memory, until this is set).
+const WORKER_URL = "https://clicksend-content-editor.regis-31d.workers.dev";
+
+const DOC_FILES = [
+  "clicksend-tov-guidelines.md",
+  "brand-guidelines.md",
+  "content-creation-checklist.md",
+  "blog-article-template.md",
+  "customer-story-template.md",
+  "customer-service-email-template.md",
+  "video-script-template.md",
+  "example-mcp-server-guide.md",
+  "example-sms-health-tech.md",
+  "example-pulsemedica-case-study.md",
+  "example-acma-sender-id-register.md",
+  "example-email-migration-guide.md",
+  "helpdoc-formatting-guidelines.md",
+  "helpdoc-example-1-rcs-at-clicksend.md",
+  "helpdoc-example-2-mps-speed-of-delivery-rcs.md",
+  "helpdoc-example-3-choosing-the-right-sender-id.md",
+  "helpdoc-example-4-guide-to-alpha-tags.md",
+  "seo-keyword-guidelines.md"
+];
+
+/* =========================================================
+   FALLBACK SNAPSHOT — used only if the live GitHub fetch fails
+   (e.g. docs not uploaded yet, repo private, network blocked).
+   Keep this reasonably in sync, but the whole point of the
+   GitHub setup is that the LIVE version is the source of truth.
+   ========================================================= */
+const FALLBACK_DOCS = {
+  "clicksend-tov-guidelines.md": `# ClickSend tone of voice guidelines
+Pillars: Empathetic, Smart, Bold, A little weird. We are NOT: corporate, condescending, over-complicated, cringe.
+Rules: talk about the customer not us (use 'you' more than 'we'), cut jargon and waffle, no exclamation marks, active voice always, short sentences (max 20 words) and short paragraphs (max 5 sentences), turn features into benefits, avoid clichés, always end with a clear CTA.
+Style: British English, no Oxford comma, sentence case headings with no full stop, contractions always ("we're" not "we are"), em dash for emphasis, ClickSend is always capitalised as one word, SMS/MMS/RCS capitalised, other products lowercase.`,
+  "brand-guidelines.md": `# ClickSend brand guidelines
+Colours: Navy #15203B (dominant), ClickSend Blue #2977FF (primary accent/CTAs), White, Yellow #FFB829 (sparing secondary accent). Fonts: Power Grotesk for headlines, Montserrat for body/subheads (legacy web: Montserrat headers, Open Sans body, Vollkorn for storytelling/quotes).`,
+  "content-creation-checklist.md": `# Content creation checklist
+Spell check, sentence case headings, British English, no Oxford comma, correct capitalisation (ClickSend, SMS/MMS/RCS caps). Logical flow, no repetition, clear reader benefit. SEO: optimised slug, one category, meta description with keyword, alt tags, correct heading hierarchy (one H1, H3 nested under H2). Compliance: product described accurately (character limits, inbound rules, country regulation, consent/opt-in), no unsubstantiated claims or invented stats.`,
+  "blog-article-template.md": `# Blog article template
+Structure: H1 (benefit-led, sentence case, no full stop, only one per page) > H2 sections (max 20 words/sentence, max 5 sentences/paragraph, benefits before features) > H3 nested under H2 > optional callout box (25 words max) > CTA. Active voice, contractions, British English.`,
+  "customer-story-template.md": `# Customer story template
+Headline formula: "How [customer] did [result] with [product/feature]". Structure: Context (who they are, human tone) > Goal & obstacle > Show don't tell (visuals/stats) > Outcome > Quote (name + job title) > CTA (25-50 words). Cut long sentences, active voice, one idea per sentence.`,
+  "customer-service-email-template.md": `# Customer service email template
+Structure: Subject line (simple or urgency-framed) > Intro "Hi [Name]," max 3 sentences > Subhead with clear next action or "you don't need to do anything" > Subhead "Any questions?" with support pointer > CTA button. Optional Johnson box for benefits. Lead with empathy, contractions, active voice, no exclamation marks.`,
+  "video-script-template.md": `# Video script template
+Two-column Visual/VO format. Write like you talk, contractions, short one-idea lines, hook in first 3-5 seconds, active voice, no exclamation marks, clear CTA at the end. Bold and a little weird, benefits-first, tight - every word earns its place.`,
+  "example-mcp-server-guide.md": `# Example: Explainer/how-to guide pattern
+Hook (relatable pain point) > plain-English definition with analogy > how it works (metaphor) > bolded use-case list > lighter social-proof examples > product tie-in > "who is this for" audience list > numbered step-by-step setup with code block > forward-looking close > CTA restating value prop. Conversational, second person, short paragraphs.`,
+  "example-sms-health-tech.md": `# Example: Industry positioning post pattern
+Provocative opening question > stakes framing for the industry > two-column use-case table > bolded pain-point list > "why this matters more here" with cost stat > mid-article product tie-in > checkmark evaluation checklist > comparison table mirroring the checklist > feature deep-dive > CTA. Authoritative, consultative tone, stats used sparingly but prominently.`,
+  "example-pulsemedica-case-study.md": `# Example: Customer case study pattern
+Universal problem framing before naming the customer > customer intro (mission/promise) > "cost of..." problem section with direct quotes > "three non-negotiables" requirements > resolution statement + quote > "how they use it day-to-day" bolded sub-headers > results section by theme > forward-looking close. Quotes integrated into prose, not isolated blockquotes.`,
+  "example-acma-sender-id-register.md": `# Example: Regulatory/news post pattern
+Shock-stat hook > villain/loophole framing > the change stated plainly > "why this matters" section > before/after contrast > urgency stat > action checklist > punchy symmetric closing line > low-key support links. Short sentences, urgent but not fear-mongering, shortest/punchiest format.`,
+  "example-email-migration-guide.md": `# Example: Migration/transition guide pattern
+Soft opening reframing a negative as positive > carve-out note for unaffected users > numbered action steps with sub-bullets > named third-party recommendation as genuine advice > clear deadline callout > "thinking beyond X" pivot/cross-sell section with comparison stats > reassuring support close. Empathetic, practical, avoids corporate deflection.`,
+  "helpdoc-formatting-guidelines.md": `# ClickSend Intercom Article (Helpdoc) Formatting Guidelines
+Output using implementation labels, not raw markdown headers: [H1] = article title/major section (shows as main accordion item), [H2] = nested subsection (shows indented in accordion), [H3] = structural heading hidden from accordion. Single [ENTER] for all spacing — never double. [DIVIDER] only marks a genuine topic change, with one [ENTER] above it. [CALLOUT] used very rarely, only for text that truly needs isolating. [FAQ] section with [EXPANDABLE] Q&A pairs always goes at the bottom, never scattered inline. [IMAGE: description] placed immediately next to the instruction it illustrates — never invent screenshots. Preserve technical meaning; do not turn every paragraph into a heading.`,
+  "helpdoc-example-1-rcs-at-clicksend.md": `# Example: Overview/feature explainer pattern (Helpdoc)
+Title as H1 > intro paragraph > dividers between major H2 topics (What is it / Why it's powerful / Available features / Best use cases / Availability & requirements / How to apply) > hidden H3s for sub-concepts within a topic (e.g. two supporting benefits) > reference tables for use cases and requirements > one callout for a load-bearing warning > full FAQ block with expandables at the end. Images placed directly beside the claim they illustrate.`,
+  "helpdoc-example-2-mps-speed-of-delivery-rcs.md": `# Example: Short concept explainer pattern (Helpdoc)
+Title as H1 > a few intro paragraphs, no heading needed yet > single divider > one H2 for the supporting definition/breakdown > short bullet list of contributing factors. No FAQ, no callout, no images — demonstrates that light structure is correct when the content doesn't warrant more.`,
+  "helpdoc-example-3-choosing-the-right-sender-id.md": `# Example: Comparison/decision-guide pattern (Helpdoc)
+Title as H1 > intro > H2 "What's available" with each option (shared numbers, dedicated numbers, alpha tags, own numbers) as a hidden H3 so the accordion isn't cluttered with near-identical nested entries > divider > H2 "Regional examples" with per-country H3s > one callout for a single hard compliance rule > FAQ block at the end.`,
+  "helpdoc-example-4-guide-to-alpha-tags.md": `# Example: Step-by-step how-to pattern (Helpdoc)
+Title as H1 > concept H2s (what/when) > divider > numbered step-by-step H2 with an [IMAGE] placed right after the step it shows, not bundled elsewhere > more concept H2s (multi-country use, local registration) > a long reference/allow-list section as plain text rather than forcing it into a table or extra headings. No FAQ needed when the body already answers the likely questions.`,
+  "seo-keyword-guidelines.md": `# SEO & keyword optimization guidelines (blog, customer story, helpdoc)
+Intent first, keywords second — never force a term at the cost of natural tone of voice. Draw keywords from ClickSend's actual product/competitive space (SMS API, bulk SMS, MMS, RCS messaging, Sender ID, Alpha Tag, dedicated number, 10DLC, OTP, appointment reminders, CPaaS) rather than generic terms. Primary keyword in H1, first 100 words, one H2, and naturally through the body; secondary/semantic keywords woven into subheadings. One keyword cluster per page. Structure for AI-answer engines: direct one-sentence answers up front, short paragraphs, question-phrased subheadings, lists for sequential/comparative content, FAQ questions mirroring real search phrasing. Per type: blog targets one cluster matched to search intent (how-to/comparison/definitional); customer stories target the use case and outcome, not the customer's name, no invented stats; helpdocs mirror real troubleshooting/support search phrasing since Intercom has no slug field. Never invent search volumes, rankings, competitor stats, internal links, or backlinks.`
+};
+
+let loadedDocs = {};
+let docsSource = "loading"; // 'live' | 'fallback'
+let lastSubmittedDraft = "";
+let lastContentType = "";
+let lastResultData = null;
+let lastTranslation = null;
+
+const TRANSLATE_LANGUAGES = ["Spanish", "French", "German", "Portuguese (Brazil)", "Italian", "Dutch", "Japanese", "Simplified Chinese"];
+let auditLog = [];
+
+async function loadDocs(){
+  const dot = document.getElementById('docsDot');
+  const text = document.getElementById('docsStatusText');
+  const results = {};
+  let liveCount = 0;
+
+  await Promise.all(DOC_FILES.map(async (filename) => {
+    const pathPart = DOCS_PATH ? `${DOCS_PATH}/` : "";
+    const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${pathPart}${filename}`;
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("status " + res.status);
+      const text = await res.text();
+      results[filename] = text;
+      liveCount++;
+    } catch (e) {
+      results[filename] = FALLBACK_DOCS[filename] || "";
+    }
+  }));
+
+  loadedDocs = results;
+
+  if (liveCount === DOC_FILES.length) {
+    docsSource = "live";
+    dot.className = "dot live";
+    text.textContent = "Guidelines live from GitHub";
+  } else if (liveCount > 0) {
+    docsSource = "partial";
+    dot.className = "dot fallback";
+    text.textContent = `${liveCount}/${DOC_FILES.length} live, rest from snapshot`;
+  } else {
+    docsSource = "fallback";
+    dot.className = "dot fallback";
+    text.textContent = "Using built-in snapshot (GitHub unreachable)";
+  }
+}
+
+loadDocs();
+loadAuditLog();
+
+/* =========================================================
+   Build the system prompt from loaded docs
+   ========================================================= */
+function buildSystemPrompt(contentType, toneValue, brevityValue){
+  const tov = loadedDocs["clicksend-tov-guidelines.md"] || "";
+  const brand = loadedDocs["brand-guidelines.md"] || "";
+  const checklist = loadedDocs["content-creation-checklist.md"] || "";
+  const seoGuidelines = loadedDocs["seo-keyword-guidelines.md"] || "";
+
+  const SEO_TYPES = ["blog", "customer-story", "helpdoc"];
+  const isSeoType = SEO_TYPES.includes(contentType);
+
+  let templateDoc = "";
+  let examplesBlock = "";
+
+  if (contentType === "blog") {
+    templateDoc = loadedDocs["blog-article-template.md"] || "";
+    const exampleFiles = [
+      "example-mcp-server-guide.md",
+      "example-sms-health-tech.md",
+      "example-pulsemedica-case-study.md",
+      "example-acma-sender-id-register.md",
+      "example-email-migration-guide.md"
+    ];
+    examplesBlock = "\n\n## Past blog post patterns (for structural reference — do not copy verbatim, use as a style/structure guide)\n\n" +
+      exampleFiles.map(f => loadedDocs[f] || "").join("\n\n---\n\n");
+  } else if (contentType === "customer-story") {
+    templateDoc = loadedDocs["customer-story-template.md"] || "";
+    examplesBlock = "\n\n## Reference pattern (case study)\n\n" + (loadedDocs["example-pulsemedica-case-study.md"] || "");
+  } else if (contentType === "email") {
+    templateDoc = loadedDocs["customer-service-email-template.md"] || "";
+  } else if (contentType === "video") {
+    templateDoc = loadedDocs["video-script-template.md"] || "";
+  } else if (contentType === "helpdoc") {
+    templateDoc = loadedDocs["helpdoc-formatting-guidelines.md"] || "";
+    const helpdocExampleFiles = [
+      "helpdoc-example-1-rcs-at-clicksend.md",
+      "helpdoc-example-2-mps-speed-of-delivery-rcs.md",
+      "helpdoc-example-3-choosing-the-right-sender-id.md",
+      "helpdoc-example-4-guide-to-alpha-tags.md"
+    ];
+    examplesBlock = "\n\n## Past helpdoc structural patterns (for structural reference — do not copy verbatim, use as a style/structure guide)\n\n" +
+      helpdocExampleFiles.map(f => loadedDocs[f] || "").join("\n\n---\n\n");
+  }
+
+  const seoBlock = isSeoType ? `
+
+## SEO & keyword optimization guidelines
+${seoGuidelines}` : "";
+
+  return `You are the ClickSend Content Editor — an internal tool that reviews and rewrites marketing and communications content so it's ready to use verbatim, without needing a human copywriter's review pass.
+
+You will be given a content type and a draft. Your job:
+1. Assess the draft against ClickSend's tone of voice, brand guidelines, the content creation checklist, and (where relevant) the structural template, past examples, and SEO guidelines below.
+2. Identify concrete issues, categorised.
+3. Produce a fully rewritten, ready-to-send version that fixes those issues while preserving the author's original intent, facts, and key messages. Never invent facts, statistics, customer names or claims that weren't in the original draft.
+
+## Tone of voice guidelines
+${tov}
+
+## Brand guidelines
+${brand}
+
+## Content creation checklist
+${checklist}
+
+## Structural template for this content type (${contentType})
+${templateDoc}
+${examplesBlock}
+${seoBlock}
+
+## Style dials for this rewrite
+Tone target: "${TONE_LABELS[toneValue]}" (${toneValue}/5 — 1 is playful/casual, 5 is formal/professional). Nudge word choice and register accordingly, but stay inside ClickSend's four brand pillars (empathetic, smart, bold, a little weird) — a more "formal" rewrite should still never sound corporate or condescending, and a more "playful" one should never abandon clarity or professionalism.
+Brevity target: "${BREVITY_LABELS[brevityValue]}" (${brevityValue}/5 — 1 is punchy/concise, 5 is thorough/detailed). Adjust rewrite length and level of elaboration accordingly, while keeping every sentence earning its place per the tone of voice rules.
+
+## Output format
+Respond with ONLY valid JSON, no markdown code fences, no preamble, matching this exact shape:
+{
+  "verdict": "ready" | "close" | "needs-work",
+  "summary": "1-2 sentence plain-English summary of the overall assessment",
+  "issues": [
+    {"category": "tone" | "structure" | "brand" | "compliance" | "seo", "note": "short, specific description of the issue and why it matters"}
+  ],
+  "rewrite": "the full rewritten content, ready to use verbatim${contentType === "helpdoc" ? `, formatted using the Intercom implementation labels from the helpdoc formatting guidelines above ([H1]/[H2]/[H3], [ENTER], [DIVIDER], [CALLOUT], [FAQ]/[EXPANDABLE], [IMAGE: description]) — do not output plain markdown headers for helpdoc content` : `, formatted with plain text line breaks (no markdown headers unless the content type calls for them)`}"${isSeoType ? `,
+  "seo": {
+    "metaTitle": "50-60 characters, includes primary keyword",
+    "metaDescription": "50-156 characters, includes primary keyword, compelling",
+    "urlSlug": "lowercase-hyphenated-slug",
+    "keywords": ["3-5 relevant keywords/phrases"],
+    "category": "one relevant category",
+    "primaryKeyword": "the single primary keyword/phrase this piece should own, drawn from ClickSend's product and topic space per the SEO guidelines",
+    "keywordRecommendations": ["2-4 short, specific, actionable notes on keyword placement or optimization opportunities in this piece — reference actual phrases/sections, not generic advice"]
+  }` : ``}
+}
+
+If the draft is already excellent, "issues" can be a short list or empty, and "rewrite" should still be provided as a clean final version. Be specific and concrete in issue notes — reference the actual phrase or section, not generic advice.${isSeoType ? ` Always include the "seo" object for ${contentType} content, derived from the rewritten content and grounded in the SEO & keyword optimization guidelines above.` : ``}`;
+}
+
+/* =========================================================
+   File upload — drag/drop + browse, extracts text client-side
+   ========================================================= */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+const browseBtn = document.getElementById('browseBtn');
+const fileBadge = document.getElementById('fileBadge');
+const fileBadgeName = document.getElementById('fileBadgeName');
+const clearFileBtn = document.getElementById('clearFileBtn');
+const fileError = document.getElementById('fileError');
+const draftEl = document.getElementById('draft');
+const counterEl = document.getElementById('counter');
+
+const WORD_SOFT_LIMIT = 6000;
+
+async function extractText(file){
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.txt') || name.endsWith('.md')){
+    return await file.text();
+  }
+  if (name.endsWith('.docx')){
+    if (!window.mammoth) throw new Error("Document parser didn't load — try pasting the text instead.");
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
+  }
+  if (name.endsWith('.pdf')){
+    if (!window.pdfjsLib) throw new Error("PDF parser didn't load — try pasting the text instead.");
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(' ') + '\n\n';
+    }
+    return text;
+  }
+  if (name.endsWith('.doc')){
+    throw new Error("Old .doc format isn't supported — please save as .docx or paste the text directly.");
+  }
+  throw new Error("Unsupported file type. Please upload a .docx, .pdf, .txt or .md file.");
+}
+
+async function handleFile(file){
+  fileError.style.display = 'none';
+  try {
+    const text = await extractText(file);
+    draftEl.value = text.trim();
+    updateCounter();
+    fileBadgeName.textContent = `${file.name} — text extracted`;
+    fileBadge.style.display = 'flex';
+    uploadZone.style.display = 'none';
+  } catch (err){
+    fileError.textContent = err.message || String(err);
+    fileError.style.display = 'block';
+  }
+}
+
+uploadZone.addEventListener('click', () => fileInput.click());
+browseBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+fileInput.addEventListener('change', (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+['dragenter','dragover'].forEach(evt => uploadZone.addEventListener(evt, (e) => {
+  e.preventDefault(); uploadZone.classList.add('dragover');
+}));
+['dragleave','drop'].forEach(evt => uploadZone.addEventListener(evt, (e) => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+}));
+uploadZone.addEventListener('drop', (e) => {
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+clearFileBtn.addEventListener('click', () => {
+  fileInput.value = '';
+  fileBadge.style.display = 'none';
+  uploadZone.style.display = 'block';
+});
+
+function updateCounter(){
+  const words = draftEl.value.trim().split(/\s+/).filter(Boolean).length;
+  counterEl.textContent = `${words.toLocaleString()} word${words === 1 ? '' : 's'}`;
+  counterEl.classList.toggle('warn', words > WORD_SOFT_LIMIT);
+  if (words > WORD_SOFT_LIMIT){
+    counterEl.textContent += ` — long document, review may be slower or less precise. Consider splitting it up.`;
+  }
+}
+draftEl.addEventListener('input', updateCounter);
+
+/* =========================================================
+   Tone / brevity dials
+   ========================================================= */
+const toneDial = document.getElementById('toneDial');
+const brevityDial = document.getElementById('brevityDial');
+const toneLabel = document.getElementById('toneLabel');
+const brevityLabel = document.getElementById('brevityLabel');
+
+const TONE_LABELS = { 1: "Very playful", 2: "Playful", 3: "On-brand default", 4: "Formal", 5: "Very formal" };
+const BREVITY_LABELS = { 1: "Very punchy", 2: "Punchy", 3: "Balanced", 4: "Detailed", 5: "Very detailed" };
+
+toneDial.addEventListener('input', () => { toneLabel.textContent = TONE_LABELS[toneDial.value]; });
+brevityDial.addEventListener('input', () => { brevityLabel.textContent = BREVITY_LABELS[brevityDial.value]; });
+
+/* =========================================================
+   Submit handler
+   ========================================================= */
+const submitBtn = document.getElementById('submitBtn');
+const resultsBody = document.getElementById('resultsBody');
+
+function setStep(n){
+  for (let i = 1; i <= 3; i++){
+    const stepEl = document.querySelector(`.step[data-step="${i}"]`);
+    stepEl.classList.remove('active','done');
+    if (i < n) stepEl.classList.add('done');
+    if (i === n) stepEl.classList.add('active');
+  }
+  const line1 = document.getElementById('line1');
+  const line2 = document.getElementById('line2');
+  line1.classList.toggle('done', n > 1);
+  line2.classList.toggle('done', n > 2);
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderDiffHtml(oldText, newText){
+  if (!window.Diff){
+    return escapeHtml(newText) + `<div style="margin-top:10px;color:var(--neutral-60);font-size:12px;">(Diff library didn't load — showing clean copy only.)</div>`;
+  }
+  const parts = Diff.diffWords(oldText, newText);
+  return parts.map(part => {
+    const escaped = escapeHtml(part.value);
+    if (part.added) return `<span class="diff-add">${escaped}</span>`;
+    if (part.removed) return `<span class="diff-del">${escaped}</span>`;
+    return escaped;
+  }).join('');
+}
+
+function renderSeoInsightsCard(seo){
+  if (!seo || (!seo.primaryKeyword && !(seo.keywordRecommendations && seo.keywordRecommendations.length))) return '';
+  const secondary = Array.isArray(seo.keywords) ? seo.keywords.filter(k => k !== seo.primaryKeyword) : [];
+  const recs = Array.isArray(seo.keywordRecommendations) ? seo.keywordRecommendations : [];
+  return `
+    <div class="seo-insights-card">
+      <h3><span>SEO &amp; keyword optimization</span></h3>
+      ${seo.primaryKeyword ? `
+        <div class="seo-primary-keyword">
+          <span class="seo-label">Primary keyword</span>
+          <span class="seo-keyword-pill">${escapeHtml(seo.primaryKeyword)}</span>
+        </div>
+      ` : ''}
+      ${secondary.length ? `
+        <div class="seo-secondary-keywords">
+          ${secondary.map(k => `<span class="seo-keyword-pill">${escapeHtml(k)}</span>`).join('')}
+        </div>
+      ` : ''}
+      ${recs.length ? `
+        <ul class="seo-recommendations">
+          ${recs.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+        </ul>
+      ` : ''}
+    </div>
+  `;
+}
+
+function renderSeoCard(seo){
+  if (!seo) return '';
+  const rows = [
+    ['Meta title', seo.metaTitle],
+    ['Meta description', seo.metaDescription],
+    ['URL slug', seo.urlSlug],
+    ['Keywords', Array.isArray(seo.keywords) ? seo.keywords.join(', ') : seo.keywords],
+    ['Category', seo.category]
+  ];
+  return `
+    <div class="seo-card">
+      <h3>
+        <span>SEO fields</span>
+        <button class="icon-btn" id="copySeoBtn" title="Copy all SEO fields">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy all
+        </button>
+      </h3>
+      ${rows.map(([label, val]) => `
+        <div class="seo-row">
+          <div class="seo-label">${escapeHtml(label)}</div>
+          <div class="seo-val">${escapeHtml(val || '')}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderResults(data){
+  lastResultData = data;
+  const verdictClass = data.verdict === 'ready' ? 'ready' : (data.verdict === 'close' ? 'close' : 'needs-work');
+  const verdictLabel = data.verdict === 'ready' ? 'Ready to send' : (data.verdict === 'close' ? 'Close — minor edits' : 'Needs work');
+
+  let issuesHtml = '';
+  if (data.issues && data.issues.length){
+    issuesHtml = `<div class="issues-section"><h3 style="font-size:13px;color:var(--navy);margin:0 0 10px 0;">What I checked</h3>` +
+      data.issues.map(iss => `
+        <div class="issue ${escapeHtml(iss.category || 'structure')}">
+          <div class="issue-cat">${escapeHtml(iss.category || 'note')}</div>
+          <div class="issue-note">${escapeHtml(iss.note || '')}</div>
+        </div>
+      `).join('') + `</div>`;
+  }
+
+  const seoInsightsHtml = renderSeoInsightsCard(data.seo);
+  const seoHtml = renderSeoCard(data.seo);
+  const diffHtml = renderDiffHtml(lastSubmittedDraft, data.rewrite || '');
+
+  resultsBody.innerHTML = `
+    <div class="verdict-card ${verdictClass}">
+      <div class="verdict-badge">${verdictLabel}</div>
+      <div class="verdict-text">${escapeHtml(data.summary || '')}</div>
+    </div>
+    ${issuesHtml}
+    ${seoInsightsHtml}
+    ${seoHtml}
+    <div class="rewrite-box">
+      <div class="rewrite-tabs">
+        <button class="rewrite-tab active" id="tabChanges">Tracked changes</button>
+        <button class="rewrite-tab" id="tabClean">Clean copy</button>
+        <button class="rewrite-tab" id="tabTranslate">Translate</button>
+      </div>
+      <div id="diffLegendWrap" class="diff-legend">
+        <span class="diff-add">Red</span> = added/changed · <span class="diff-del">strikethrough</span> = removed
+      </div>
+      <h3 style="margin-top:0;">
+        <span></span>
+        <div class="rewrite-actions">
+          <button class="icon-btn" id="copyBtn" title="Copy to clipboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+          <button class="icon-btn" id="downloadBtn" title="Download as .txt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+          <button class="icon-btn" id="emailBtn" title="Email this">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+            Email
+          </button>
+        </div>
+      </h3>
+      <div class="rewrite-content" id="diffContent">${diffHtml}</div>
+      <div class="rewrite-content" id="rewriteContent" style="display:none;">${escapeHtml(data.rewrite || '')}</div>
+      <div class="rewrite-content" id="translateTabContent" style="display:none;">
+        <div class="translate-row">
+          <select id="translateLangSelect">
+            <option value="">Choose a language…</option>
+            ${TRANSLATE_LANGUAGES.map(l => `<option value="${escapeHtml(l)}">${escapeHtml(l)}</option>`).join('')}
+            <option value="__custom__">Other…</option>
+          </select>
+          <button class="btn" id="translateBtn">Translate</button>
+        </div>
+        <input type="text" id="translateLangCustom" placeholder="Type a language, e.g. Korean" style="display:none;">
+        <div id="translateResultBox" style="display:none;">
+          <h3 style="margin-top:0;">
+            <span class="translate-lang-label" id="translateResultLangLabel"></span>
+            <div class="rewrite-actions">
+              <button class="icon-btn" id="copyTranslateBtn" title="Copy to clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                Copy
+              </button>
+              <button class="icon-btn" id="downloadTranslateBtn" title="Download as .txt">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download
+              </button>
+            </div>
+          </h3>
+          <div class="rewrite-content" id="translateResultContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="approve-bar">
+      <input type="text" id="approverName" placeholder="Your name or initials">
+      <button class="approve-btn" id="approveBtn">✓ Approve this content</button>
+      <span class="approved-tag" id="approvedTag" style="display:none;"></span>
+    </div>
+  `;
+
+  document.getElementById('tabChanges').addEventListener('click', () => {
+    document.getElementById('tabChanges').classList.add('active');
+    document.getElementById('tabClean').classList.remove('active');
+    document.getElementById('tabTranslate').classList.remove('active');
+    document.getElementById('diffContent').style.display = 'block';
+    document.getElementById('rewriteContent').style.display = 'none';
+    document.getElementById('translateTabContent').style.display = 'none';
+    document.getElementById('diffLegendWrap').style.display = 'block';
+  });
+  document.getElementById('tabClean').addEventListener('click', () => {
+    document.getElementById('tabClean').classList.add('active');
+    document.getElementById('tabChanges').classList.remove('active');
+    document.getElementById('tabTranslate').classList.remove('active');
+    document.getElementById('rewriteContent').style.display = 'block';
+    document.getElementById('diffContent').style.display = 'none';
+    document.getElementById('translateTabContent').style.display = 'none';
+    document.getElementById('diffLegendWrap').style.display = 'none';
+  });
+  document.getElementById('tabTranslate').addEventListener('click', () => {
+    document.getElementById('tabTranslate').classList.add('active');
+    document.getElementById('tabChanges').classList.remove('active');
+    document.getElementById('tabClean').classList.remove('active');
+    document.getElementById('translateTabContent').style.display = 'block';
+    document.getElementById('diffContent').style.display = 'none';
+    document.getElementById('rewriteContent').style.display = 'none';
+    document.getElementById('diffLegendWrap').style.display = 'none';
+  });
+
+  document.getElementById('translateLangSelect').addEventListener('change', (e) => {
+    document.getElementById('translateLangCustom').style.display = e.target.value === '__custom__' ? 'block' : 'none';
+  });
+  document.getElementById('translateBtn').addEventListener('click', handleTranslate);
+  document.getElementById('copyTranslateBtn').addEventListener('click', () => {
+    if (!lastTranslation) return;
+    navigator.clipboard.writeText(lastTranslation.text || '').then(() => {
+      const btn = document.getElementById('copyTranslateBtn');
+      const original = btn.innerHTML;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1800);
+    });
+  });
+  document.getElementById('downloadTranslateBtn').addEventListener('click', () => {
+    if (!lastTranslation) return;
+    const blob = new Blob([lastTranslation.text || ''], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const langSlug = (lastTranslation.language || 'translated').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    a.download = `clicksend-${lastContentType}-${langSlug}-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(data.rewrite || '').then(() => {
+      const btn = document.getElementById('copyBtn');
+      const original = btn.innerHTML;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1800);
+    });
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const blob = new Blob([data.rewrite || ''], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clicksend-${lastContentType}-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('emailBtn').addEventListener('click', () => {
+    const subject = encodeURIComponent('ClickSend content ready for review');
+    const body = encodeURIComponent(data.rewrite || '');
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  });
+
+  if (document.getElementById('copySeoBtn')){
+    document.getElementById('copySeoBtn').addEventListener('click', () => {
+      const seo = data.seo || {};
+      const text = `Meta title: ${seo.metaTitle || ''}\nMeta description: ${seo.metaDescription || ''}\nURL slug: ${seo.urlSlug || ''}\nKeywords: ${(seo.keywords || []).join(', ')}\nCategory: ${seo.category || ''}`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copySeoBtn');
+        const original = btn.innerHTML;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.innerHTML = original; }, 1800);
+      });
+    });
+  }
+
+  document.getElementById('approveBtn').addEventListener('click', () => {
+    const name = document.getElementById('approverName').value.trim();
+    if (!name){
+      document.getElementById('approverName').focus();
+      return;
+    }
+    logApproval(name, data);
+  });
+}
+
+async function logApproval(name, data){
+  const entry = {
+    time: new Date(),
+    name,
+    contentType: lastContentType,
+    verdict: data.verdict,
+    wordCount: (data.rewrite || '').trim().split(/\s+/).filter(Boolean).length
+  };
+
+  const approveBtn = document.getElementById('approveBtn');
+  approveBtn.disabled = true;
+  approveBtn.textContent = 'Saving…';
+
+  if (WORKER_URL){
+    try {
+      await fetch(`${WORKER_URL}/audit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: entry.name,
+          contentType: entry.contentType,
+          verdict: entry.verdict,
+          wordCount: entry.wordCount
+        })
+      });
+      await loadAuditLog(); // refresh from the shared source of truth
+    } catch (e) {
+      // fall back to local-only if the write failed
+      auditLog.push(entry);
+      renderAuditTable();
+    }
+  } else {
+    auditLog.push(entry);
+    renderAuditTable();
+  }
+
+  approveBtn.textContent = '✓ Approved';
+  const tag = document.getElementById('approvedTag');
+  tag.textContent = `Approved by ${name} at ${entry.time.toLocaleTimeString()}`;
+  tag.style.display = 'inline';
+}
+
+async function loadAuditLog(){
+  if (!WORKER_URL){
+    renderAuditTable();
+    return;
+  }
+  try {
+    const res = await fetch(`${WORKER_URL}/audit`);
+    const entries = await res.json();
+    auditLog = entries.map(e => ({ ...e, time: new Date(e.time) }));
+    renderAuditTable();
+  } catch (e) {
+    renderAuditTable();
+  }
+}
+
+function renderAuditTable(){
+  const wrap = document.getElementById('auditTableWrap');
+  if (!auditLog.length){
+    wrap.innerHTML = `<div class="audit-empty">No approvals logged yet this session.</div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <table class="audit-table">
+      <thead>
+        <tr><th>Time</th><th>Approved by</th><th>Content type</th><th>Verdict</th><th>Word count</th></tr>
+      </thead>
+      <tbody>
+        ${auditLog.slice().reverse().map(e => `
+          <tr>
+            <td>${e.time.toLocaleString()}</td>
+            <td>${escapeHtml(e.name)}</td>
+            <td>${escapeHtml(e.contentType)}</td>
+            <td>${escapeHtml(e.verdict)}</td>
+            <td>${e.wordCount}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <button class="export-csv-btn" id="exportCsvBtn">Export as CSV</button>
+  `;
+  document.getElementById('exportCsvBtn').addEventListener('click', exportAuditCsv);
+}
+
+function exportAuditCsv(){
+  const header = "Time,Approved by,Content type,Verdict,Word count\n";
+  const rows = auditLog.map(e =>
+    `"${e.time.toISOString()}","${e.name}","${e.contentType}","${e.verdict}",${e.wordCount}`
+  ).join("\n");
+  const blob = new Blob([header + rows], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `clicksend-content-audit-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function handleSubmit(){
+  const draft = document.getElementById('draft').value.trim();
+  const contentType = document.getElementById('contentType').value;
+  lastSubmittedDraft = draft;
+  lastContentType = contentType;
+
+  if (!draft){
+    resultsBody.innerHTML = `<div class="error-box">Paste some content first.</div>`;
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Reviewing…";
+  setStep(2);
+  resultsBody.innerHTML = `<div class="placeholder"><div class="icon">⏳</div>Checking tone, structure, brand and compliance…</div>`;
+
+  try {
+    const systemPrompt = buildSystemPrompt(contentType, toneDial.value, brevityDial.value);
+    const requestBody = {
+      system: systemPrompt,
+      messages: [
+        { role: "user", content: `Content type: ${contentType}\n\nDraft:\n\n${draft}` }
+      ]
+    };
+
+    let data;
+    if (WORKER_URL) {
+      const response = await fetch(`${WORKER_URL}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      });
+      data = await response.json();
+    } else {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 4000, ...requestBody })
+      });
+      data = await response.json();
+    }
+    const textBlock = (data.content || []).find(b => b.type === "text");
+    if (!textBlock) throw new Error("No text response from model");
+
+    let cleaned = textBlock.text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    const parsed = JSON.parse(cleaned);
+
+    setStep(3);
+    renderResults(parsed);
+
+  } catch (err) {
+    setStep(1);
+    resultsBody.innerHTML = `<div class="error-box"><strong>Something went wrong.</strong><br>${escapeHtml(err.message || String(err))}</div>`;
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Review & rewrite";
+  }
+}
+
+submitBtn.addEventListener('click', handleSubmit);
+
+/* ----------------------------------------
+   Translation of the approved EN rewrite
+---------------------------------------- */
+function buildTranslatePrompt(languageName, contentType){
+  const isHelpdoc = contentType === "helpdoc";
+  return `You are a professional localization editor for ClickSend, a CPaaS / business messaging company (SMS API, RCS, MMS, Sender ID, Alpha Tag, 10DLC, OTP, CPaaS).
+
+You will be given a piece of marketing or support content that has ALREADY been reviewed and approved in English against ClickSend's brand and tone guidelines. Your job is to translate it into ${languageName} so it reads as if it were natively written for a ${languageName}-speaking audience — not a literal, word-for-word translation.
+
+Rules:
+1. Preserve meaning, structure, paragraph breaks, and any lists.
+2. Keep ClickSend's tone equivalent in ${languageName}: empathetic, smart, bold, a little weird — never stiff, robotic, or overly formal unless the source is. Adapt idioms rather than translating them literally.
+3. Keep product and feature names in English unless there is a well-established localized term in ${languageName}: SMS API, RCS, MMS, Sender ID, Alpha Tag, 10DLC, OTP, CPaaS.
+4. Keep any calls-to-action natural and persuasive in ${languageName}, not just translated word-for-word.
+${isHelpdoc ? `5. This content is formatted with Intercom implementation labels ([H1], [H2], [H3], [ENTER], [DIVIDER], [CALLOUT], [FAQ], [EXPANDABLE], [IMAGE: ...]). Keep every label exactly as-is and in the same position — translate only the human-readable text between/after the labels.` : `5. Keep the same formatting style as the source (no markdown headers unless the source already uses them).`}
+6. Do not add commentary, notes, translator remarks, or explanations of any kind — output only the translated content itself.
+
+Respond ONLY with raw JSON, no markdown code fences, no preamble, in exactly this shape:
+{"translatedText": "the full translated content, ready to use verbatim"}`;
+}
+
+async function handleTranslate(){
+  const select = document.getElementById('translateLangSelect');
+  const customInput = document.getElementById('translateLangCustom');
+  let language = select.value;
+  if (language === '__custom__'){
+    language = customInput.value.trim();
+  }
+  if (!language){
+    (select.value === '__custom__' ? customInput : select).focus();
+    return;
+  }
+  if (!lastResultData || !lastResultData.rewrite){
+    return;
+  }
+
+  const btn = document.getElementById('translateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Translating…';
+
+  const resultBox = document.getElementById('translateResultBox');
+  const resultContent = document.getElementById('translateResultContent');
+  resultBox.style.display = 'block';
+  document.getElementById('translateResultLangLabel').textContent = language;
+  resultContent.innerHTML = `<span style="color:var(--neutral-60);">Translating into ${escapeHtml(language)}…</span>`;
+
+  try {
+    const systemPrompt = buildTranslatePrompt(language, lastContentType);
+    const requestBody = {
+      system: systemPrompt,
+      messages: [
+        { role: "user", content: lastResultData.rewrite }
+      ]
+    };
+
+    let data;
+    if (WORKER_URL) {
+      const response = await fetch(`${WORKER_URL}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      });
+      data = await response.json();
+    } else {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 4000, ...requestBody })
+      });
+      data = await response.json();
+    }
+
+    const textBlock = (data.content || []).find(b => b.type === "text");
+    if (!textBlock) throw new Error("No text response from model");
+
+    let cleaned = textBlock.text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '');
+    const parsed = JSON.parse(cleaned);
+
+    lastTranslation = { language, text: parsed.translatedText || '' };
+    resultContent.innerHTML = escapeHtml(lastTranslation.text);
+
+  } catch (err) {
+    resultContent.innerHTML = `<span style="color:var(--err);">Translation failed: ${escapeHtml(err.message || String(err))}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Translate';
+  }
+}
+
+/* =========================================================
+   TAB NAVIGATION — shell for Editor / Creator / Intel / SEO Engine
+   ========================================================= */
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector('.tab-nav-btn[data-tab="' + name + '"]').classList.add('active');
+  if (name === 'intel' && !intelLoaded) loadIntelSnapshot();
+}
+
+/* =========================================================
+   COMPETITIVE INTEL
+   Reads a monthly-cached snapshot from the Worker rather than
+   calling Anthropic live on every page load. Expected response
+   shape from GET {WORKER_URL}/intel/snapshot:
+   {
+     updatedAt: "2026-08-28T10:00:00Z",
+     strategicDigest: "...",
+     marketSummary: "...",
+     topOpportunities: ["...", "...", "..."],
+     clicksend: { positivesDetail: "...", negativesDetail: "..." },
+     competitors: [{ name, sentiment, summary, opportunity }, ...],
+     quotes: [{ competitor, text, source, insight }, ...]   // capped to 40 client-side
+   }
+   POST {WORKER_URL}/intel/refresh-all -> same shape, triggers a live run
+   GET  {WORKER_URL}/intel/history -> [{ id, label }, ...]
+   GET  {WORKER_URL}/intel/history/:id -> markdown snapshot (download)
+   ========================================================= */
+const INTEL_COMPETITORS = [
+  "Sinch","Twilio","Telnyx","Bandwidth","Plivo","Bird","TextMagic",
+  "SlickText","SimpleTexting","EZ Texting","BulkSMS","VooDooSMS","SMSGlobal",
+  "Omnisend","Salesmsg","Textline","Textedly","Mobile Text Alerts"
+];
+
+let intelLoaded = false;
+let intelHistoryLoaded = false;
+let lastIntelData = null;
+
+/* Shared formatter — this exact shape is what gets mirrored server-side
+   for the auto-committed GitHub archive, so the manual download and the
+   repo history always match. */
+function formatIntelMarkdown(data){
+  const dateLabel = data.updatedAt
+    ? new Date(data.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
+    : 'Undated snapshot';
+  const cs = data.clicksend || {};
+  const lines = [];
+
+  lines.push(`# ClickSend Competitive Intelligence — ${dateLabel}`);
+  lines.push('');
+  if (data.updatedAt) lines.push(`_Refreshed ${new Date(data.updatedAt).toLocaleString()}_`);
+  lines.push('');
+
+  lines.push('## Strategic digest');
+  lines.push(data.strategicDigest || '_No digest generated yet._');
+  lines.push('');
+
+  lines.push('## Market summary');
+  lines.push(data.marketSummary || '_No summary generated yet._');
+  lines.push('');
+
+  if (data.topOpportunities && data.topOpportunities.length){
+    lines.push('## ClickSend positioning opportunities');
+    data.topOpportunities.forEach(o => lines.push(`- ${o}`));
+    lines.push('');
+  }
+
+  lines.push('## ClickSend baseline');
+  lines.push('**What customers love**');
+  lines.push(cs.positivesDetail || '_No data yet._');
+  lines.push('');
+  lines.push('**Gaps & complaints**');
+  lines.push(cs.negativesDetail || '_No data yet._');
+  lines.push('');
+
+  lines.push('## Competitor summaries');
+  (data.competitors || []).forEach(c => {
+    lines.push(`### ${c.name} — ${c.sentiment || 'unknown'}`);
+    lines.push(c.summary || '_No summary._');
+    if (c.opportunity) lines.push(`> ↗ Opportunity: ${c.opportunity}`);
+    lines.push('');
+  });
+
+  const quotes = (data.quotes || []).slice(0, 40);
+  if (quotes.length){
+    lines.push('## Market quotes');
+    quotes.forEach(q => {
+      lines.push(`- **${q.competitor}** (${q.source || 'source n/a'}): "${q.text}"${q.insight ? `  \n  _Insight: ${q.insight}_` : ''}`);
+    });
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+function downloadIntelSnapshot(){
+  if (!lastIntelData) return;
+  const md = formatIntelMarkdown(lastIntelData);
+  const dateSlug = lastIntelData.updatedAt
+    ? new Date(lastIntelData.updatedAt).toISOString().slice(0, 7)
+    : 'undated';
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `clicksend-competitive-intel-${dateSlug}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function loadIntelSnapshot(){
+  const metaEl = document.getElementById('intelLastUpdated');
+  try{
+    const res = await fetch(WORKER_URL + '/intel/snapshot');
+    if (!res.ok){
+      metaEl.textContent = res.status === 404
+        ? 'No snapshot yet — click "Refresh now" to run the first one.'
+        : 'Could not load snapshot (error ' + res.status + ').';
+      return;
+    }
+    renderIntelSnapshot(await res.json());
+    intelLoaded = true;
+  } catch(e){
+    metaEl.textContent = 'Could not reach the Worker — check WORKER_URL.';
+  }
+}
+
+// The manual refresh drives one step per request — one competitor (or the
+// ClickSend baseline, or the final synthesis) at a time. Each request
+// finishes in seconds, so nothing relies on a background job surviving
+// past Cloudflare's 30-second waitUntil ceiling. The monthly cron run is
+// unaffected by any of this — it uses a single long-running scheduled()
+// invocation server-side, no browser involved.
+async function refreshIntelAll(){
+  const btn = document.getElementById('intelRefreshBtn');
+  const STEP_PACING_MS = 8000; // spacing between web-search calls
+  btn.disabled = true;
+  btn.textContent = '↻ Starting…';
+
+  try{
+    const startRes = await fetch(WORKER_URL + '/intel/refresh-all', { method: 'POST' });
+    if (!startRes.ok) throw new Error('Could not start refresh (status ' + startRes.status + ')');
+    const { totalSteps } = await startRes.json();
+
+    let done = false;
+    while (!done){
+      await new Promise(r => setTimeout(r, STEP_PACING_MS));
+      const stepRes = await fetch(WORKER_URL + '/intel/refresh-step', { method: 'POST' });
+      if (!stepRes.ok){
+        const errBody = await stepRes.json().catch(() => ({}));
+        throw new Error(errBody.error || ('Step failed (status ' + stepRes.status + ')'));
+      }
+      const stepData = await stepRes.json();
+      if (stepData.done){
+        renderIntelSnapshot(stepData.snapshot);
+        intelLoaded = true;
+        intelHistoryLoaded = false; // a fresh archive entry may now exist
+        done = true;
+      } else {
+        btn.textContent = `↻ ${stepData.progress} (${stepData.stepIndex}/${totalSteps})`;
+      }
+    }
+  } catch(e){
+    alert('Refresh failed: ' + (e.message || e) + '\n\nWhatever completed before this point is not saved — click Refresh now to start over.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ Refresh now';
+  }
+}
+
+function renderIntelSnapshot(data){
+  lastIntelData = data;
+  document.getElementById('intelDownloadBtn').disabled = false;
+
+  document.getElementById('intelLastUpdated').textContent = data.updatedAt
+    ? 'Last refreshed ' + new Date(data.updatedAt).toLocaleString() + ' · next scheduled refresh in ~30 days'
+    : 'Not yet run.';
+
+  document.getElementById('intelDigestText').textContent = data.strategicDigest || 'No snapshot yet — run a refresh to generate one.';
+  document.getElementById('intelSummaryText').textContent = data.marketSummary || 'No data yet.';
+
+  const oppsBanner = document.getElementById('intelOppsBanner');
+  if (data.topOpportunities && data.topOpportunities.length){
+    oppsBanner.style.display = 'block';
+    document.getElementById('intelOppsList').innerHTML = data.topOpportunities.map(o => '<li>' + escapeHtml(o) + '</li>').join('');
+  } else {
+    oppsBanner.style.display = 'none';
+  }
+
+  const cs = data.clicksend || {};
+  document.getElementById('intelCsLove').textContent = cs.positivesDetail || 'No data yet.';
+  document.getElementById('intelCsGaps').textContent = cs.negativesDetail || 'No data yet.';
+
+  const grid = document.getElementById('intelCompetitorGrid');
+  const competitors = data.competitors || [];
+  grid.innerHTML = competitors.length ? competitors.map(c => `
+    <div class="intel-card">
+      <div class="intel-card-head">
+        <span class="intel-card-name">${escapeHtml(c.name)}</span>
+        <span class="intel-sentiment ${c.sentiment || 'unknown'}">${escapeHtml(c.sentiment || '—')}</span>
+      </div>
+      <div class="intel-card-body">${escapeHtml(c.summary || 'No summary yet.')}</div>
+      ${c.opportunity ? `<div class="intel-card-opp">↗ ${escapeHtml(c.opportunity)}</div>` : ''}
+    </div>
+  `).join('') : '<div class="placeholder">No competitor data yet.</div>';
+
+  const quotes = (data.quotes || []).slice(0, 40);
+  document.getElementById('intelQuoteCount').textContent = quotes.length;
+  document.getElementById('intelQuotesContainer').innerHTML = quotes.length ? quotes.map(q => `
+    <div class="intel-quote-card">
+      <div class="intel-quote-meta">
+        <span class="intel-quote-competitor">${escapeHtml(q.competitor)}</span>
+        <span class="intel-quote-source">${escapeHtml(q.source || '')}</span>
+      </div>
+      <div class="intel-quote-text">"${escapeHtml(q.text)}"</div>
+      ${q.insight ? `<div class="intel-quote-insight"><span class="label">Insight</span><span>${escapeHtml(q.insight)}</span></div>` : ''}
+    </div>
+  `).join('') : '<div class="placeholder">No quotes yet.</div>';
+}
+
+async function toggleIntelHistory(){
+  const panel = document.getElementById('intelHistoryPanel');
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if (!show || intelHistoryLoaded) return;
+
+  const listEl = document.getElementById('intelHistoryList');
+  try{
+    const res = await fetch(WORKER_URL + '/intel/history');
+    const list = res.ok ? await res.json() : [];
+    listEl.innerHTML = list.length ? list.map(h => `
+      <div class="intel-history-item">
+        <span>${escapeHtml(h.label)}</span>
+        <a class="btn-secondary btn-sm" href="${WORKER_URL}/intel/history/${encodeURIComponent(h.id)}" target="_blank" rel="noopener">Download .md</a>
+      </div>
+    `).join('') : '<div class="placeholder">No snapshots archived yet.</div>';
+    intelHistoryLoaded = true;
+  } catch(e){
+    listEl.textContent = 'Could not load history.';
+  }
+}
+</script>
+
+</body>
+</html>
