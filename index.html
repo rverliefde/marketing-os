@@ -608,6 +608,169 @@
     cursor:pointer;
     margin-top:14px;
   }
+
+  /* ---- Tab navigation ---- */
+  .tab-nav{
+    background:var(--white);
+    border-bottom:1.5px solid var(--neutral-15);
+    padding:0 32px;
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+  }
+  .tab-nav-btn{
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.2px;
+    color:var(--neutral-60);
+    background:none;
+    border:none;
+    border-bottom:3px solid transparent;
+    padding:16px 18px 13px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+    transition:color 0.15s ease, border-color 0.15s ease;
+  }
+  .tab-nav-btn:hover{color:var(--navy);}
+  .tab-nav-btn.active{color:var(--navy); border-bottom-color:var(--blue);}
+  .tab-nav-badge{
+    font-family:'Open Sans',sans-serif;
+    font-weight:600;
+    font-size:10px;
+    letter-spacing:0.3px;
+    text-transform:uppercase;
+    color:var(--neutral-60);
+    background:var(--neutral-15);
+    padding:2px 7px;
+    border-radius:999px;
+  }
+
+  /* ---- Tab panels ---- */
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ---- Coming soon card ---- */
+  .panel.coming-soon{
+    max-width:640px;
+    margin:32px auto;
+    padding:48px 40px;
+    text-align:center;
+  }
+  .coming-soon .icon{font-size:30px; margin-bottom:14px;}
+  .coming-soon h2{
+    font-size:20px;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--navy);
+    margin-bottom:10px;
+  }
+  .coming-soon p{
+    color:var(--neutral-60);
+    font-size:14px;
+    line-height:1.6;
+    margin:0 0 20px;
+  }
+  .coming-soon ul{
+    text-align:left;
+    display:inline-block;
+    margin:0 auto;
+    padding-left:20px;
+    color:var(--neutral-90);
+    font-size:13.5px;
+    line-height:1.9;
+  }
+  .coming-soon .tag{
+    display:inline-block;
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    color:var(--blue);
+    background:var(--blue-15);
+    padding:4px 12px;
+    border-radius:999px;
+    margin-bottom:16px;
+  }
+
+  /* ---- Competitive Intel ---- */
+  .intel-header-panel{padding:20px 24px;}
+  .intel-header-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+  .intel-header-row h2{margin:0 0 4px; text-transform:none; letter-spacing:0; font-size:17px; color:var(--navy);}
+  .intel-meta{font-size:12.5px; color:var(--neutral-60);}
+  .intel-header-actions{display:flex; gap:8px;}
+  .btn-secondary{
+    font-family:'Montserrat',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    padding:9px 16px;
+    border-radius:8px;
+    border:1.5px solid var(--neutral-15);
+    background:var(--white);
+    color:var(--navy);
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .btn-secondary:hover{border-color:var(--blue); background:var(--blue-05);}
+  .btn-secondary:disabled{color:var(--neutral-30); cursor:not-allowed; border-color:var(--neutral-15); background:var(--neutral-05);}
+  .btn-sm{padding:6px 12px; font-size:11.5px;}
+
+  .intel-banner{margin-top:16px;}
+  .intel-banner-label{
+    font-family:'Montserrat',sans-serif;
+    font-size:10.5px;
+    font-weight:800;
+    letter-spacing:0.6px;
+    text-transform:uppercase;
+    color:var(--neutral-60);
+    margin-bottom:8px;
+  }
+  .intel-banner-text{font-size:14px; line-height:1.7; color:var(--neutral-90);}
+  .intel-banner-success{background:#EAF8F1; border-color:var(--ok);}
+  .intel-banner-success .intel-banner-label{color:var(--ok);}
+  .intel-opp-list{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; font-size:14px; color:var(--neutral-90);}
+  .intel-opp-list li::before{content:'→ '; color:var(--ok); font-weight:700;}
+
+  .intel-cs-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media(max-width:700px){.intel-cs-grid{grid-template-columns:1fr;}}
+  .intel-cs-card{border-radius:10px; padding:16px 18px; font-size:13.5px; line-height:1.6; color:var(--neutral-90);}
+  .intel-cs-love{background:#EAF8F1; border:1.5px solid var(--ok);}
+  .intel-cs-gaps{background:#FFF6E8; border:1.5px solid var(--yellow);}
+  .intel-cs-label{
+    font-family:'Montserrat',sans-serif;
+    font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;
+    margin-bottom:8px;
+  }
+  .intel-cs-love .intel-cs-label{color:var(--ok);}
+  .intel-cs-gaps .intel-cs-label{color:var(--warn);}
+
+  .intel-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px;}
+  .intel-card{border:1px solid var(--neutral-15); border-radius:10px; padding:14px 16px; background:var(--white);}
+  .intel-card-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;}
+  .intel-card-name{font-family:'Montserrat',sans-serif; font-weight:700; font-size:13.5px; color:var(--navy);}
+  .intel-sentiment{font-size:9.5px; font-weight:800; letter-spacing:0.4px; text-transform:uppercase; padding:3px 9px; border-radius:999px; white-space:nowrap;}
+  .intel-sentiment.positive{background:#EAF8F1; color:var(--ok);}
+  .intel-sentiment.mixed{background:#FFF6E8; color:var(--warn);}
+  .intel-sentiment.negative{background:#FDEDED; color:var(--err);}
+  .intel-sentiment.unknown{background:var(--neutral-15); color:var(--neutral-60);}
+  .intel-card-body{font-size:12.5px; line-height:1.6; color:var(--neutral-60);}
+  .intel-card-opp{margin-top:8px; padding:8px 10px; background:var(--blue-05); border-left:2px solid var(--blue); border-radius:0 6px 6px 0; font-size:12px; color:var(--navy); line-height:1.5;}
+
+  .intel-quotes{display:flex; flex-direction:column; gap:10px;}
+  .intel-quote-card{border:1px solid var(--neutral-15); border-radius:10px; padding:14px 16px; background:var(--white);}
+  .intel-quote-meta{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;}
+  .intel-quote-competitor{font-family:'Montserrat',sans-serif; font-weight:700; font-size:12.5px; color:var(--navy);}
+  .intel-quote-source{font-size:11px; color:var(--neutral-60);}
+  .intel-quote-text{font-size:13.5px; line-height:1.6; color:var(--neutral-90); font-style:italic; border-left:2px solid var(--neutral-15); padding-left:12px;}
+  .intel-quote-insight{margin-top:8px; font-size:12px; color:var(--ok); display:flex; gap:6px;}
+  .intel-quote-insight .label{font-weight:800; text-transform:uppercase; font-size:10px; letter-spacing:0.4px; white-space:nowrap;}
+
+  .intel-history-item{padding:10px 0; border-bottom:1px solid var(--neutral-15); display:flex; align-items:center; justify-content:space-between; font-size:13px; gap:10px;}
+  .intel-history-item:last-child{border-bottom:none;}
 </style>
 </head>
 <body>
@@ -626,6 +789,14 @@
   </div>
 </header>
 
+<nav class="tab-nav" id="tabNav">
+  <button class="tab-nav-btn" data-tab="intel" onclick="switchTab('intel')">Competitive Intel</button>
+  <button class="tab-nav-btn" data-tab="seo" onclick="switchTab('seo')">SEO Content Engine <span class="tab-nav-badge">Soon</span></button>
+  <button class="tab-nav-btn" data-tab="creator" onclick="switchTab('creator')">Content Creator <span class="tab-nav-badge">Soon</span></button>
+  <button class="tab-nav-btn active" data-tab="editor" onclick="switchTab('editor')">Content Editor</button>
+</nav>
+
+<div id="tab-editor" class="tab-panel active">
 <main>
   <section class="panel">
     <h2>Submit content</h2>
@@ -702,6 +873,100 @@
     <div class="audit-empty">No approvals logged yet this session.</div>
   </div>
 </section>
+</div>
+
+<div id="tab-creator" class="tab-panel">
+  <section class="panel coming-soon">
+    <div class="tag">Building next</div>
+    <div class="icon">🎙️</div>
+    <h2>Content Creator</h2>
+    <p>Run a voice interview, and get a first draft out the other side — blog post, social post, or case study — vetted through the same brand and tone guidelines as the Editor tab.</p>
+    <ul>
+      <li>Voice-based interview flow</li>
+      <li>Fans out into multiple content types at once</li>
+      <li>Vetted through existing brand guidelines</li>
+      <li>Translate into any supported language</li>
+    </ul>
+  </section>
+</div>
+
+<div id="tab-intel" class="tab-panel">
+
+  <section class="panel intel-header-panel">
+    <div class="intel-header-row">
+      <div>
+        <h2>Competitive intelligence</h2>
+        <div class="intel-meta" id="intelLastUpdated">Loading…</div>
+      </div>
+      <div class="intel-header-actions">
+        <button class="btn-secondary btn-sm" id="intelDownloadBtn" onclick="downloadIntelSnapshot()" disabled>⤓ Download .md</button>
+        <button class="btn-secondary btn-sm" id="intelHistoryToggleBtn" onclick="toggleIntelHistory()">View history</button>
+        <button class="btn-secondary btn-sm" id="intelRefreshBtn" onclick="refreshIntelAll()">↻ Refresh now</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="intelHistoryPanel" style="display:none;">
+    <h2>Monthly snapshots</h2>
+    <div id="intelHistoryList" class="placeholder">Loading…</div>
+  </section>
+
+  <section class="panel intel-banner">
+    <div class="intel-banner-label">Strategic digest · bottom line</div>
+    <div class="intel-banner-text" id="intelDigestText">No snapshot yet — run a refresh to generate one.</div>
+  </section>
+
+  <section class="panel intel-banner">
+    <div class="intel-banner-label">Market summary</div>
+    <div class="intel-banner-text" id="intelSummaryText">No data yet.</div>
+  </section>
+
+  <section class="panel intel-banner intel-banner-success" id="intelOppsBanner" style="display:none;">
+    <div class="intel-banner-label">↗ ClickSend positioning opportunities</div>
+    <ul class="intel-opp-list" id="intelOppsList"></ul>
+  </section>
+
+  <section class="panel">
+    <h2>ClickSend baseline</h2>
+    <div class="intel-cs-grid">
+      <div class="intel-cs-card intel-cs-love">
+        <div class="intel-cs-label">✓ What customers love</div>
+        <div id="intelCsLove">No data yet.</div>
+      </div>
+      <div class="intel-cs-card intel-cs-gaps">
+        <div class="intel-cs-label">⚠ Gaps &amp; complaints</div>
+        <div id="intelCsGaps">No data yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Competitor summaries</h2>
+    <div class="intel-grid" id="intelCompetitorGrid"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Market quotes <span class="tab-nav-badge" id="intelQuoteCount">0</span></h2>
+    <div class="intel-quotes" id="intelQuotesContainer">
+      <div class="placeholder">No quotes yet.</div>
+    </div>
+  </section>
+
+</div>
+
+<div id="tab-seo" class="tab-panel">
+  <section class="panel coming-soon">
+    <div class="tag">Coming soon</div>
+    <div class="icon">🧭</div>
+    <h2>SEO Content Engine</h2>
+    <p>Turns a competitive gap or target keyword into a structured content brief — outline, angle, suggested format — then hands it to the Editor or Content Creator tab depending on what the piece needs.</p>
+    <ul>
+      <li>Keyword &amp; gap-driven briefs</li>
+      <li>One-click handoff to Editor or Creator</li>
+      <li>Built for AEO / GEO citability</li>
+    </ul>
+  </section>
+</div>
 
 <footer>
   ClickSend Marketing OS · Guidelines pulled live from GitHub
@@ -1582,6 +1847,260 @@ async function handleTranslate(){
   } finally {
     btn.disabled = false;
     btn.textContent = 'Translate';
+  }
+}
+
+/* =========================================================
+   TAB NAVIGATION — shell for Editor / Creator / Intel / SEO Engine
+   ========================================================= */
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelector('.tab-nav-btn[data-tab="' + name + '"]').classList.add('active');
+  if (name === 'intel' && !intelLoaded) loadIntelSnapshot();
+}
+
+/* =========================================================
+   COMPETITIVE INTEL
+   Reads a monthly-cached snapshot from the Worker rather than
+   calling Anthropic live on every page load. Expected response
+   shape from GET {WORKER_URL}/intel/snapshot:
+   {
+     updatedAt: "2026-08-28T10:00:00Z",
+     strategicDigest: "...",
+     marketSummary: "...",
+     topOpportunities: ["...", "...", "..."],
+     clicksend: { positivesDetail: "...", negativesDetail: "..." },
+     competitors: [{ name, sentiment, summary, opportunity }, ...],
+     quotes: [{ competitor, text, source, insight }, ...]   // capped to 40 client-side
+   }
+   POST {WORKER_URL}/intel/refresh-all -> same shape, triggers a live run
+   GET  {WORKER_URL}/intel/history -> [{ id, label }, ...]
+   GET  {WORKER_URL}/intel/history/:id -> markdown snapshot (download)
+   ========================================================= */
+const INTEL_COMPETITORS = [
+  "Sinch","Twilio","Telnyx","Bandwidth","Plivo","Bird","TextMagic",
+  "SlickText","SimpleTexting","EZ Texting","BulkSMS","VooDooSMS","SMSGlobal",
+  "Omnisend","Salesmsg","Textline","Textedly","Mobile Text Alerts"
+];
+
+let intelLoaded = false;
+let intelHistoryLoaded = false;
+let lastIntelData = null;
+
+/* Shared formatter — this exact shape is what gets mirrored server-side
+   for the auto-committed GitHub archive, so the manual download and the
+   repo history always match. */
+function formatIntelMarkdown(data){
+  const dateLabel = data.updatedAt
+    ? new Date(data.updatedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })
+    : 'Undated snapshot';
+  const cs = data.clicksend || {};
+  const lines = [];
+
+  lines.push(`# ClickSend Competitive Intelligence — ${dateLabel}`);
+  lines.push('');
+  if (data.updatedAt) lines.push(`_Refreshed ${new Date(data.updatedAt).toLocaleString()}_`);
+  lines.push('');
+
+  lines.push('## Strategic digest');
+  lines.push(data.strategicDigest || '_No digest generated yet._');
+  lines.push('');
+
+  lines.push('## Market summary');
+  lines.push(data.marketSummary || '_No summary generated yet._');
+  lines.push('');
+
+  if (data.topOpportunities && data.topOpportunities.length){
+    lines.push('## ClickSend positioning opportunities');
+    data.topOpportunities.forEach(o => lines.push(`- ${o}`));
+    lines.push('');
+  }
+
+  lines.push('## ClickSend baseline');
+  lines.push('**What customers love**');
+  lines.push(cs.positivesDetail || '_No data yet._');
+  lines.push('');
+  lines.push('**Gaps & complaints**');
+  lines.push(cs.negativesDetail || '_No data yet._');
+  lines.push('');
+
+  lines.push('## Competitor summaries');
+  (data.competitors || []).forEach(c => {
+    lines.push(`### ${c.name} — ${c.sentiment || 'unknown'}`);
+    lines.push(c.summary || '_No summary._');
+    if (c.opportunity) lines.push(`> ↗ Opportunity: ${c.opportunity}`);
+    lines.push('');
+  });
+
+  const quotes = (data.quotes || []).slice(0, 40);
+  if (quotes.length){
+    lines.push('## Market quotes');
+    quotes.forEach(q => {
+      lines.push(`- **${q.competitor}** (${q.source || 'source n/a'}): "${q.text}"${q.insight ? `  \n  _Insight: ${q.insight}_` : ''}`);
+    });
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+function downloadIntelSnapshot(){
+  if (!lastIntelData) return;
+  const md = formatIntelMarkdown(lastIntelData);
+  const dateSlug = lastIntelData.updatedAt
+    ? new Date(lastIntelData.updatedAt).toISOString().slice(0, 7)
+    : 'undated';
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `clicksend-competitive-intel-${dateSlug}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function loadIntelSnapshot(){
+  const metaEl = document.getElementById('intelLastUpdated');
+  try{
+    const res = await fetch(WORKER_URL + '/intel/snapshot');
+    if (!res.ok){
+      metaEl.textContent = res.status === 404
+        ? 'Worker route not deployed yet.'
+        : 'Could not load snapshot (error ' + res.status + ').';
+      return;
+    }
+    renderIntelSnapshot(await res.json());
+    intelLoaded = true;
+  } catch(e){
+    metaEl.textContent = 'Could not reach the Worker — check WORKER_URL.';
+  }
+}
+
+async function refreshIntelAll(){
+  const btn = document.getElementById('intelRefreshBtn');
+  btn.disabled = true;
+  btn.textContent = '↻ Starting…';
+  try{
+    const res = await fetch(WORKER_URL + '/intel/refresh-all', { method: 'POST' });
+    if (res.status === 409){
+      btn.textContent = '↻ Already running…';
+    } else if (!res.ok && res.status !== 202){
+      throw new Error('Refresh failed (status ' + res.status + ')');
+    }
+    await pollIntelStatus(btn);
+  } catch(e){
+    alert('Refresh failed: ' + (e.message || e));
+    btn.disabled = false;
+    btn.textContent = '↻ Refresh now';
+  }
+}
+
+// The job runs server-side for several minutes (18 competitors + ClickSend,
+// spaced ~8s apart) — this polls /intel/status rather than holding one
+// long HTTP request open.
+async function pollIntelStatus(btn){
+  const POLL_MS = 10000;
+  const MAX_POLLS = 60; // ~10 minutes ceiling
+  for (let i = 0; i < MAX_POLLS; i++){
+    await new Promise(r => setTimeout(r, POLL_MS));
+    let status;
+    try{
+      const res = await fetch(WORKER_URL + '/intel/status');
+      status = res.ok ? await res.json() : { state: 'unknown' };
+    } catch(e){
+      status = { state: 'unknown' };
+    }
+
+    if (status.state === 'running'){
+      btn.textContent = '↻ ' + (status.progress || 'Running…');
+      continue;
+    }
+    if (status.state === 'error'){
+      alert('Refresh failed: ' + (status.error || 'unknown error'));
+      break;
+    }
+    // idle (or unknown after a running state) — assume finished, reload the snapshot
+    await loadIntelSnapshot();
+    intelHistoryLoaded = false; // a fresh archive entry may now exist
+    break;
+  }
+  btn.disabled = false;
+  btn.textContent = '↻ Refresh now';
+}
+
+function renderIntelSnapshot(data){
+  lastIntelData = data;
+  document.getElementById('intelDownloadBtn').disabled = false;
+
+  document.getElementById('intelLastUpdated').textContent = data.updatedAt
+    ? 'Last refreshed ' + new Date(data.updatedAt).toLocaleString() + ' · next scheduled refresh in ~30 days'
+    : 'Not yet run.';
+
+  document.getElementById('intelDigestText').textContent = data.strategicDigest || 'No snapshot yet — run a refresh to generate one.';
+  document.getElementById('intelSummaryText').textContent = data.marketSummary || 'No data yet.';
+
+  const oppsBanner = document.getElementById('intelOppsBanner');
+  if (data.topOpportunities && data.topOpportunities.length){
+    oppsBanner.style.display = 'block';
+    document.getElementById('intelOppsList').innerHTML = data.topOpportunities.map(o => '<li>' + escapeHtml(o) + '</li>').join('');
+  } else {
+    oppsBanner.style.display = 'none';
+  }
+
+  const cs = data.clicksend || {};
+  document.getElementById('intelCsLove').textContent = cs.positivesDetail || 'No data yet.';
+  document.getElementById('intelCsGaps').textContent = cs.negativesDetail || 'No data yet.';
+
+  const grid = document.getElementById('intelCompetitorGrid');
+  const competitors = data.competitors || [];
+  grid.innerHTML = competitors.length ? competitors.map(c => `
+    <div class="intel-card">
+      <div class="intel-card-head">
+        <span class="intel-card-name">${escapeHtml(c.name)}</span>
+        <span class="intel-sentiment ${c.sentiment || 'unknown'}">${escapeHtml(c.sentiment || '—')}</span>
+      </div>
+      <div class="intel-card-body">${escapeHtml(c.summary || 'No summary yet.')}</div>
+      ${c.opportunity ? `<div class="intel-card-opp">↗ ${escapeHtml(c.opportunity)}</div>` : ''}
+    </div>
+  `).join('') : '<div class="placeholder">No competitor data yet.</div>';
+
+  const quotes = (data.quotes || []).slice(0, 40);
+  document.getElementById('intelQuoteCount').textContent = quotes.length;
+  document.getElementById('intelQuotesContainer').innerHTML = quotes.length ? quotes.map(q => `
+    <div class="intel-quote-card">
+      <div class="intel-quote-meta">
+        <span class="intel-quote-competitor">${escapeHtml(q.competitor)}</span>
+        <span class="intel-quote-source">${escapeHtml(q.source || '')}</span>
+      </div>
+      <div class="intel-quote-text">"${escapeHtml(q.text)}"</div>
+      ${q.insight ? `<div class="intel-quote-insight"><span class="label">Insight</span><span>${escapeHtml(q.insight)}</span></div>` : ''}
+    </div>
+  `).join('') : '<div class="placeholder">No quotes yet.</div>';
+}
+
+async function toggleIntelHistory(){
+  const panel = document.getElementById('intelHistoryPanel');
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if (!show || intelHistoryLoaded) return;
+
+  const listEl = document.getElementById('intelHistoryList');
+  try{
+    const res = await fetch(WORKER_URL + '/intel/history');
+    const list = res.ok ? await res.json() : [];
+    listEl.innerHTML = list.length ? list.map(h => `
+      <div class="intel-history-item">
+        <span>${escapeHtml(h.label)}</span>
+        <a class="btn-secondary btn-sm" href="${WORKER_URL}/intel/history/${encodeURIComponent(h.id)}" target="_blank" rel="noopener">Download .md</a>
+      </div>
+    `).join('') : '<div class="placeholder">No snapshots archived yet.</div>';
+    intelHistoryLoaded = true;
+  } catch(e){
+    listEl.textContent = 'Could not load history.';
   }
 }
 </script>
