@@ -798,6 +798,29 @@
   .blog-inv-row a{color:var(--navy); text-decoration:none;}
   .blog-inv-row a:hover{color:var(--blue); text-decoration:underline;}
   .blog-inv-row .blog-inv-url{color:var(--neutral-60); font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;}
+
+  /* ---- Topic ideas ---- */
+  .topics-list{display:flex; flex-direction:column; gap:12px;}
+  .topic-card{border:1px solid var(--neutral-15); border-radius:10px; padding:16px 18px;}
+  .topic-card-head{display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:8px;}
+  .topic-card-title{font-family:'Montserrat',sans-serif; font-weight:700; font-size:14.5px; color:var(--navy); line-height:1.4;}
+  .topic-score{
+    font-family:'Montserrat',sans-serif; font-weight:800; font-size:15px;
+    color:var(--white); background:var(--navy);
+    padding:4px 11px; border-radius:8px; white-space:nowrap;
+  }
+  .topic-meta-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+  .topic-format{
+    font-family:'Montserrat',sans-serif; font-weight:700; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px;
+    color:var(--blue); background:var(--blue-15); padding:3px 10px; border-radius:999px;
+  }
+  .topic-gap{font-size:12px; color:var(--neutral-60); font-style:italic;}
+  .topic-regions{display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;}
+  .topic-region{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:6px; white-space:nowrap;}
+  .topic-region.thin{background:#EAF8F1; color:var(--ok);}
+  .topic-region.moderate{background:#FFF6E8; color:var(--warn);}
+  .topic-region.crowded{background:#FDEDED; color:var(--err);}
+  .topic-rationale{font-size:13px; line-height:1.6; color:var(--neutral-90);}
 </style>
 </head>
 <body>
@@ -986,6 +1009,24 @@
   <section class="panel intel-header-panel">
     <div class="intel-header-row">
       <div>
+        <h2>Topic ideas</h2>
+        <div class="intel-meta" id="topicsLastUpdated">Loading…</div>
+      </div>
+      <div class="intel-header-actions">
+        <button class="btn-secondary btn-sm" id="topicsGenerateBtn" onclick="generateTopicIdeas()">↻ Generate ideas</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="topics-list" id="topicsList">
+      <div class="placeholder">No topic ideas yet — click "Generate ideas". Needs a Competitive Intel refresh and a blog inventory sync to already exist.</div>
+    </div>
+  </section>
+
+  <section class="panel intel-header-panel">
+    <div class="intel-header-row">
+      <div>
         <h2>Blog inventory</h2>
         <div class="intel-meta" id="blogInvLastUpdated">Loading…</div>
       </div>
@@ -1001,13 +1042,6 @@
     <div class="blog-inv-list" id="blogInvList">
       <div class="placeholder">No inventory yet — click "Sync now".</div>
     </div>
-  </section>
-
-  <section class="panel coming-soon">
-    <div class="tag">Building next</div>
-    <div class="icon">🧭</div>
-    <h2>Topic ideas</h2>
-    <p>Generates candidate topics grounded in competitive gaps, checks them against this inventory, search-probes US/GB/AU/FR demand, and scores each on AEO value, relevance and positioning fit — plus a place to submit and vet your own ideas.</p>
   </section>
 
 </div>
@@ -1904,6 +1938,7 @@ function switchTab(name){
   document.querySelector('.tab-nav-btn[data-tab="' + name + '"]').classList.add('active');
   if (name === 'intel' && !intelLoaded) loadIntelSnapshot();
   if (name === 'seo' && !blogInvLoaded) loadBlogInventory();
+  if (name === 'seo' && !topicsLoaded) loadTopicIdeas();
 }
 
 /* =========================================================
@@ -2230,6 +2265,102 @@ async function syncBlogInventory(){
   } finally {
     btn.disabled = false;
     btn.textContent = '↻ Sync now';
+  }
+}
+
+/* =========================================================
+   TOPIC IDEAS — candidates grounded in Intel + blog inventory,
+   researched and scored one at a time, same step pattern as
+   Intel's refresh and the blog inventory sync.
+   ========================================================= */
+let topicsLoaded = false;
+
+async function loadTopicIdeas(){
+  const metaEl = document.getElementById('topicsLastUpdated');
+  try{
+    const res = await fetch(WORKER_URL + '/seo-topics/latest');
+    if (!res.ok){
+      metaEl.textContent = res.status === 404 ? 'No topic ideas yet — click "Generate ideas".' : 'Could not load topic ideas (error ' + res.status + ').';
+      return;
+    }
+    renderTopicIdeas(await res.json());
+    topicsLoaded = true;
+  } catch(e){
+    metaEl.textContent = 'Could not reach the Worker — check WORKER_URL.';
+  }
+}
+
+function renderTopicIdeas(data){
+  document.getElementById('topicsLastUpdated').textContent = data.updatedAt
+    ? 'Last generated ' + new Date(data.updatedAt).toLocaleString()
+    : 'Not yet generated.';
+
+  const listEl = document.getElementById('topicsList');
+  const topics = data.topics || [];
+  if (!topics.length){
+    listEl.innerHTML = '<div class="placeholder">No topic ideas yet — click "Generate ideas".</div>';
+    return;
+  }
+
+  const regionOrder = ['US', 'GB', 'AU', 'FR'];
+  listEl.innerHTML = topics.map(t => {
+    const regionBadges = regionOrder
+      .filter(r => t.regions && t.regions[r])
+      .map(r => `<span class="topic-region ${t.regions[r].opportunity || 'moderate'}" title="${escapeHtml(t.regions[r].note || '')}">${r}: ${escapeHtml(t.regions[r].opportunity || '—')}</span>`)
+      .join('');
+    return `
+      <div class="topic-card">
+        <div class="topic-card-head">
+          <div class="topic-card-title">${escapeHtml(t.topic)}</div>
+          <div class="topic-score">${t.scores.overall}/10</div>
+        </div>
+        <div class="topic-meta-row">
+          <span class="topic-format">${escapeHtml(t.format)}</span>
+          <span class="topic-gap">Grounded in: ${escapeHtml(t.groundedInGap)}</span>
+        </div>
+        <div class="topic-regions">${regionBadges}</div>
+        <div class="topic-rationale">${escapeHtml(t.rationale)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function generateTopicIdeas(){
+  const btn = document.getElementById('topicsGenerateBtn');
+  const STEP_PACING_MS = 8000; // these steps use web_search, same pacing as Intel
+  btn.disabled = true;
+  btn.textContent = '↻ Starting…';
+
+  try{
+    const startRes = await fetch(WORKER_URL + '/seo-topics/start', { method: 'POST' });
+    if (!startRes.ok){
+      const errBody = await startRes.json().catch(() => ({}));
+      throw new Error(errBody.error || ('Could not start (status ' + startRes.status + ')'));
+    }
+    const { totalSteps } = await startRes.json();
+
+    let done = false;
+    while (!done){
+      await new Promise(r => setTimeout(r, STEP_PACING_MS));
+      const stepRes = await fetch(WORKER_URL + '/seo-topics/step', { method: 'POST' });
+      if (!stepRes.ok){
+        const errBody = await stepRes.json().catch(() => ({}));
+        throw new Error(errBody.error || ('Step failed (status ' + stepRes.status + ')'));
+      }
+      const stepData = await stepRes.json();
+      if (stepData.done){
+        renderTopicIdeas(stepData.result);
+        topicsLoaded = true;
+        done = true;
+      } else {
+        btn.textContent = `↻ ${stepData.progress} (${stepData.stepIndex}/${totalSteps})`;
+      }
+    }
+  } catch(e){
+    alert('Generate failed: ' + (e.message || e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↻ Generate ideas';
   }
 }
 </script>
