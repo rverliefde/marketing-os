@@ -821,6 +821,49 @@
   .topic-region.moderate{background:#FFF6E8; color:var(--warn);}
   .topic-region.crowded{background:#FDEDED; color:var(--err);}
   .topic-rationale{font-size:13px; line-height:1.6; color:var(--neutral-90);}
+  .topic-actions{display:flex; gap:8px; margin-top:12px;}
+  .topic-card.benched{opacity:0.6;}
+
+  /* ---- Content Creator ---- */
+  .creator-select{
+    width:100%;
+    font-family:'Open Sans',sans-serif;
+    font-size:13.5px;
+    padding:10px 14px;
+    border:1.5px solid var(--neutral-15);
+    border-radius:8px;
+    background:var(--white);
+    box-sizing:border-box;
+  }
+  .creator-select:focus{outline:none; border-color:var(--blue);}
+  .creator-topic-detail{margin-top:10px;}
+  .creator-format-row{display:flex; align-items:center; gap:10px; margin:14px 0;}
+  .creator-format-row label{font-size:12.5px; font-weight:700; color:var(--neutral-60); white-space:nowrap;}
+  .creator-format-select{width:auto; flex:0 0 180px;}
+  .creator-draft-output{
+    width:100%;
+    min-height:320px;
+    font-family:'Open Sans',sans-serif;
+    font-size:14px;
+    line-height:1.6;
+    padding:16px;
+    border:1.5px solid var(--neutral-15);
+    border-radius:8px;
+    box-sizing:border-box;
+    resize:vertical;
+    margin-bottom:14px;
+  }
+  .creator-draft-output:focus{outline:none; border-color:var(--blue);}
+  .creator-format-checks{display:flex; flex-direction:column; gap:8px; font-size:13.5px;}
+  .creator-format-checks label{display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:400;}
+
+  /* ---- Queue ---- */
+  .queue-list{display:flex; flex-direction:column; gap:10px;}
+  .queue-item{border:1px solid var(--neutral-15); border-radius:10px; padding:14px 16px;}
+  .queue-item.sent{opacity:0.55;}
+  .queue-item-head{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px;}
+  .queue-item-title{font-family:'Montserrat',sans-serif; font-weight:700; font-size:13.5px; color:var(--navy);}
+  .queue-item-preview{font-size:12.5px; color:var(--neutral-60); line-height:1.5; margin-bottom:10px; max-height:60px; overflow:hidden;}
 </style>
 </head>
 <body>
@@ -842,7 +885,7 @@
 <nav class="tab-nav" id="tabNav">
   <button class="tab-nav-btn" data-tab="intel" onclick="switchTab('intel')">Competitive Intel</button>
   <button class="tab-nav-btn" data-tab="seo" onclick="switchTab('seo')">SEO Content Engine</button>
-  <button class="tab-nav-btn" data-tab="creator" onclick="switchTab('creator')">Content Creator <span class="tab-nav-badge">Soon</span></button>
+  <button class="tab-nav-btn" data-tab="creator" onclick="switchTab('creator')">Content Creator</button>
   <button class="tab-nav-btn active" data-tab="editor" onclick="switchTab('editor')">Content Editor</button>
 </nav>
 
@@ -858,6 +901,7 @@
       <option value="email">Customer service email</option>
       <option value="video">Video script</option>
       <option value="helpdoc">Helpdoc / support article</option>
+      <option value="social">Social post (LinkedIn)</option>
       <option value="other">Other / general</option>
     </select>
 
@@ -926,18 +970,47 @@
 </div>
 
 <div id="tab-creator" class="tab-panel">
-  <section class="panel coming-soon">
-    <div class="tag">Building next</div>
-    <div class="icon">🎙️</div>
-    <h2>Content Creator</h2>
-    <p>Run a voice interview, and get a first draft out the other side — blog post, social post, or case study — vetted through the same brand and tone guidelines as the Editor tab.</p>
-    <ul>
-      <li>Voice-based interview flow</li>
-      <li>Fans out into multiple content types at once</li>
-      <li>Vetted through existing brand guidelines</li>
-      <li>Translate into any supported language</li>
-    </ul>
+
+  <section class="panel intel-header-panel">
+    <div class="intel-header-row">
+      <div>
+        <h2>Content Creator</h2>
+        <div class="intel-meta">Drafts from approved pending topics, one or more formats at a time, then queues each for handoff to the Editor.</div>
+      </div>
+    </div>
   </section>
+
+  <section class="panel">
+    <h2>Pick a topic</h2>
+    <select id="creatorTopicSelect" class="creator-select" onchange="onCreatorTopicChange()">
+      <option value="">Loading pending topics…</option>
+    </select>
+
+    <div id="creatorTopicDetail" class="creator-topic-detail" style="display:none;">
+      <div class="topic-gap" id="creatorTopicGap"></div>
+    </div>
+
+    <div class="creator-format-row" style="align-items:flex-start;">
+      <label style="padding-top:2px;">Formats</label>
+      <div id="creatorFormatChecks" class="creator-format-checks">
+        <label><input type="checkbox" value="blog"> Blog</label>
+        <label><input type="checkbox" value="web page"> Web page</label>
+        <label><input type="checkbox" value="help doc"> Help doc</label>
+        <label><input type="checkbox" value="video"> Video script</label>
+        <label><input type="checkbox" value="social"> Social post (LinkedIn)</label>
+      </div>
+    </div>
+
+    <button class="export-csv-btn" id="creatorGenerateBtn" onclick="generateCreatorDrafts()" disabled>Generate selected</button>
+  </section>
+
+  <section class="panel">
+    <h2>Queue <span class="tab-nav-badge" id="creatorQueueCount">0</span></h2>
+    <div class="queue-list" id="creatorQueueList">
+      <div class="placeholder">Nothing queued yet — generate a draft above.</div>
+    </div>
+  </section>
+
 </div>
 
 <div id="tab-intel" class="tab-panel">
@@ -1019,9 +1092,29 @@
   </section>
 
   <section class="panel">
-    <div class="topics-list" id="topicsList">
-      <div class="placeholder">No topic ideas yet — click "Generate ideas". Needs a Competitive Intel refresh and a blog inventory sync to already exist.</div>
+    <h2>Add your own</h2>
+    <input type="text" id="manualTopicTitle" class="creator-select" placeholder="Topic title…" style="margin-bottom:8px;">
+    <textarea id="manualTopicDesc" class="creator-draft-output" placeholder="Description — why this matters, what it should cover…" style="min-height:80px; margin-bottom:8px;"></textarea>
+    <button class="btn-secondary btn-sm" onclick="submitManualTopic()">Add topic</button>
+  </section>
+
+  <section class="panel">
+    <h2>New suggestions <span class="tab-nav-badge" id="topicsNewCount">0</span></h2>
+    <div class="topics-list" id="topicsNewList">
+      <div class="placeholder">No topic ideas yet — click "Generate ideas" above, or add your own.</div>
     </div>
+  </section>
+
+  <section class="panel">
+    <h2>Pending content <span class="tab-nav-badge" id="topicsPendingCount">0</span></h2>
+    <div class="topics-list" id="topicsPendingList">
+      <div class="placeholder">Nothing approved yet.</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 onclick="toggleBenchedList()" style="cursor:pointer;">Benched <span class="tab-nav-badge" id="topicsBenchedCount">0</span></h2>
+    <div class="topics-list" id="topicsBenchedList" style="display:none;"></div>
   </section>
 
   <section class="panel intel-header-panel">
@@ -1223,6 +1316,11 @@ function buildSystemPrompt(contentType, toneValue, brevityValue){
     templateDoc = loadedDocs["customer-service-email-template.md"] || "";
   } else if (contentType === "video") {
     templateDoc = loadedDocs["video-script-template.md"] || "";
+  } else if (contentType === "social") {
+    // No dedicated social-post-template.md exists yet in DOC_FILES — this inline
+    // note is a placeholder. Add a real guideline file and reference it here
+    // once you have LinkedIn-specific conventions worth codifying.
+    templateDoc = "LinkedIn post conventions: a strong first line (it's what shows before \"see more\" and decides whether anyone reads further), short punchy paragraphs rather than dense blocks, genuinely useful substance over engagement-bait, at most a couple of hashtags if any, no more than a few hundred words.";
   } else if (contentType === "helpdoc") {
     templateDoc = loadedDocs["helpdoc-formatting-guidelines.md"] || "";
     const helpdocExampleFiles = [
@@ -1939,6 +2037,7 @@ function switchTab(name){
   if (name === 'intel' && !intelLoaded) loadIntelSnapshot();
   if (name === 'seo' && !blogInvLoaded) loadBlogInventory();
   if (name === 'seo' && !topicsLoaded) loadTopicIdeas();
+  if (name === 'creator' && !creatorTopicsLoaded) loadCreatorTopics();
 }
 
 /* =========================================================
@@ -2269,60 +2368,124 @@ async function syncBlogInventory(){
 }
 
 /* =========================================================
-   TOPIC IDEAS — candidates grounded in Intel + blog inventory,
-   researched and scored one at a time, same step pattern as
-   Intel's refresh and the blog inventory sync.
+   TOPIC IDEAS — persistent registry, every topic has a status
+   (new / pending / benched). Generation APPENDS to the registry
+   rather than replacing it, so triage decisions survive across
+   runs. Manual entries skip research and land straight in "new".
    ========================================================= */
 let topicsLoaded = false;
+let topicRegistry = [];
 
 async function loadTopicIdeas(){
   const metaEl = document.getElementById('topicsLastUpdated');
   try{
-    const res = await fetch(WORKER_URL + '/seo-topics/latest');
+    const res = await fetch(WORKER_URL + '/seo-topics/registry');
     if (!res.ok){
-      metaEl.textContent = res.status === 404 ? 'No topic ideas yet — click "Generate ideas".' : 'Could not load topic ideas (error ' + res.status + ').';
+      metaEl.textContent = 'Could not load topic ideas (error ' + res.status + ').';
       return;
     }
-    renderTopicIdeas(await res.json());
+    const data = await res.json();
+    topicRegistry = data.topics || [];
+    renderTopicRegistry();
     topicsLoaded = true;
   } catch(e){
     metaEl.textContent = 'Could not reach the Worker — check WORKER_URL.';
   }
 }
 
-function renderTopicIdeas(data){
-  document.getElementById('topicsLastUpdated').textContent = data.updatedAt
-    ? 'Last generated ' + new Date(data.updatedAt).toLocaleString()
-    : 'Not yet generated.';
+function renderTopicRegistry(){
+  const newTopics = topicRegistry.filter(t => t.status === 'new').sort((a, b) => (b._overall || 0) - (a._overall || 0));
+  const pending = topicRegistry.filter(t => t.status === 'pending');
+  const benched = topicRegistry.filter(t => t.status === 'benched');
 
-  const listEl = document.getElementById('topicsList');
-  const topics = data.topics || [];
-  if (!topics.length){
-    listEl.innerHTML = '<div class="placeholder">No topic ideas yet — click "Generate ideas".</div>';
+  document.getElementById('topicsLastUpdated').textContent = topicRegistry.length
+    ? `${topicRegistry.length} topic${topicRegistry.length === 1 ? '' : 's'} in the registry`
+    : 'No topic ideas yet.';
+
+  document.getElementById('topicsNewCount').textContent = newTopics.length;
+  document.getElementById('topicsPendingCount').textContent = pending.length;
+  document.getElementById('topicsBenchedCount').textContent = benched.length;
+
+  document.getElementById('topicsNewList').innerHTML = newTopics.length
+    ? newTopics.map(t => topicCardHtml(t, ['progress', 'bench'])).join('')
+    : '<div class="placeholder">No topic ideas yet — click "Generate ideas" above, or add your own.</div>';
+
+  document.getElementById('topicsPendingList').innerHTML = pending.length
+    ? pending.map(t => topicCardHtml(t, ['bench'])).join('')
+    : '<div class="placeholder">Nothing approved yet.</div>';
+
+  document.getElementById('topicsBenchedList').innerHTML = benched.length
+    ? benched.map(t => topicCardHtml(t, ['restore'])).join('')
+    : '<div class="placeholder">Nothing benched.</div>';
+}
+
+function topicCardHtml(t, actions){
+  const actionButtons = actions.map(a => {
+    if (a === 'progress') return `<button class="btn-secondary btn-sm" onclick="setTopicStatus('${t.id}','pending')">✓ Progress</button>`;
+    if (a === 'bench') return `<button class="btn-secondary btn-sm" onclick="setTopicStatus('${t.id}','benched')">Bench</button>`;
+    if (a === 'restore') return `<button class="btn-secondary btn-sm" onclick="setTopicStatus('${t.id}','new')">Restore</button>`;
+    return '';
+  }).join('');
+  return `
+    <div class="topic-card ${t.status === 'benched' ? 'benched' : ''}">
+      <div class="topic-card-head">
+        <div class="topic-card-title">${escapeHtml(t.topic)}</div>
+      </div>
+      <div class="topic-meta-row">
+        <span class="topic-format">${escapeHtml(t.format)}</span>
+        ${t.source === 'manual' ? '<span class="topic-format" style="background:var(--neutral-15); color:var(--neutral-60);">Manual</span>' : ''}
+      </div>
+      <div class="topic-rationale">${escapeHtml(t.paragraph)}</div>
+      <div class="topic-actions">${actionButtons}</div>
+    </div>
+  `;
+}
+
+async function setTopicStatus(id, status){
+  try{
+    const res = await fetch(WORKER_URL + '/seo-topics/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status })
+    });
+    if (!res.ok) throw new Error('Status update failed (status ' + res.status + ')');
+    const topic = topicRegistry.find(t => t.id === id);
+    if (topic) topic.status = status;
+    renderTopicRegistry();
+  } catch(e){
+    alert('Could not update topic: ' + (e.message || e));
+  }
+}
+
+async function submitManualTopic(){
+  const titleEl = document.getElementById('manualTopicTitle');
+  const descEl = document.getElementById('manualTopicDesc');
+  const title = titleEl.value.trim();
+  const description = descEl.value.trim();
+  if (!title || !description){
+    alert('Add both a title and a description.');
     return;
   }
+  try{
+    const res = await fetch(WORKER_URL + '/seo-topics/manual', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, description })
+    });
+    if (!res.ok) throw new Error('Could not add topic (status ' + res.status + ')');
+    const data = await res.json();
+    topicRegistry.push(data.topic);
+    renderTopicRegistry();
+    titleEl.value = '';
+    descEl.value = '';
+  } catch(e){
+    alert('Could not add topic: ' + (e.message || e));
+  }
+}
 
-  const regionOrder = ['US', 'GB', 'AU', 'FR'];
-  listEl.innerHTML = topics.map(t => {
-    const regionBadges = regionOrder
-      .filter(r => t.regions && t.regions[r])
-      .map(r => `<span class="topic-region ${t.regions[r].opportunity || 'moderate'}" title="${escapeHtml(t.regions[r].note || '')}">${r}: ${escapeHtml(t.regions[r].opportunity || '—')}</span>`)
-      .join('');
-    return `
-      <div class="topic-card">
-        <div class="topic-card-head">
-          <div class="topic-card-title">${escapeHtml(t.topic)}</div>
-          <div class="topic-score">${t.scores.overall}/10</div>
-        </div>
-        <div class="topic-meta-row">
-          <span class="topic-format">${escapeHtml(t.format)}</span>
-          <span class="topic-gap">Grounded in: ${escapeHtml(t.groundedInGap)}</span>
-        </div>
-        <div class="topic-regions">${regionBadges}</div>
-        <div class="topic-rationale">${escapeHtml(t.rationale)}</div>
-      </div>
-    `;
-  }).join('');
+function toggleBenchedList(){
+  const el = document.getElementById('topicsBenchedList');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
 async function generateTopicIdeas(){
@@ -2349,7 +2512,8 @@ async function generateTopicIdeas(){
       }
       const stepData = await stepRes.json();
       if (stepData.done){
-        renderTopicIdeas(stepData.result);
+        topicRegistry = stepData.registry || topicRegistry;
+        renderTopicRegistry();
         topicsLoaded = true;
         done = true;
       } else {
@@ -2362,6 +2526,147 @@ async function generateTopicIdeas(){
     btn.disabled = false;
     btn.textContent = '↻ Generate ideas';
   }
+}
+
+/* =========================================================
+   CONTENT CREATOR — drafts from PENDING topics (approved in
+   SEO Content Engine), one or more formats at once. Every
+   generated draft is auto-queued server-side; this tab's job
+   is to drive generation and manage the queue, not hold drafts
+   in a single textarea.
+   ========================================================= */
+let creatorTopicsLoaded = false;
+let creatorPendingTopics = [];
+let creatorQueue = [];
+
+async function loadCreatorTopics(){
+  const select = document.getElementById('creatorTopicSelect');
+  try{
+    const res = await fetch(WORKER_URL + '/seo-topics/registry');
+    if (!res.ok){
+      select.innerHTML = '<option value="">Could not load topics</option>';
+      creatorTopicsLoaded = true;
+      return;
+    }
+    const data = await res.json();
+    creatorPendingTopics = (data.topics || []).filter(t => t.status === 'pending');
+    select.innerHTML = creatorPendingTopics.length
+      ? '<option value="">Choose a topic…</option>' + creatorPendingTopics.map((t, i) => `<option value="${i}">${escapeHtml(t.topic)}</option>`).join('')
+      : '<option value="">No pending topics — approve one in SEO Content Engine first</option>';
+    creatorTopicsLoaded = true;
+  } catch(e){
+    select.innerHTML = '<option value="">Could not reach the Worker</option>';
+  }
+  loadCreatorQueue();
+}
+
+function onCreatorTopicChange(){
+  const idx = document.getElementById('creatorTopicSelect').value;
+  const detailEl = document.getElementById('creatorTopicDetail');
+  const genBtn = document.getElementById('creatorGenerateBtn');
+  const checks = document.querySelectorAll('#creatorFormatChecks input[type="checkbox"]');
+
+  if (idx === ''){
+    detailEl.style.display = 'none';
+    genBtn.disabled = true;
+    return;
+  }
+  const topic = creatorPendingTopics[idx];
+  document.getElementById('creatorTopicGap').textContent = topic.paragraph;
+  detailEl.style.display = 'block';
+  checks.forEach(c => { c.checked = (c.value === topic.format); });
+  genBtn.disabled = false;
+}
+
+async function generateCreatorDrafts(){
+  const idx = document.getElementById('creatorTopicSelect').value;
+  if (idx === '') return;
+  const topic = creatorPendingTopics[idx];
+  const checks = [...document.querySelectorAll('#creatorFormatChecks input[type="checkbox"]:checked')];
+  if (!checks.length){
+    alert('Select at least one format.');
+    return;
+  }
+  const btn = document.getElementById('creatorGenerateBtn');
+  btn.disabled = true;
+
+  for (const check of checks){
+    const format = check.value;
+    btn.textContent = `Generating ${format}…`;
+    try{
+      const res = await fetch(WORKER_URL + '/content-creator/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: topic.topic, groundedInGap: topic.paragraph, format })
+      });
+      if (!res.ok){
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || ('Draft failed (status ' + res.status + ')'));
+      }
+      const data = await res.json();
+      creatorQueue.push(data.queueItem);
+      renderCreatorQueue();
+    } catch(e){
+      alert(`Draft generation failed for ${format}: ` + (e.message || e));
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate selected';
+}
+
+async function loadCreatorQueue(){
+  try{
+    const res = await fetch(WORKER_URL + '/content-creator/queue');
+    if (!res.ok) return;
+    const data = await res.json();
+    creatorQueue = data.queue || [];
+    renderCreatorQueue();
+  } catch(e){}
+}
+
+function renderCreatorQueue(){
+  const active = creatorQueue.filter(q => q.status !== 'sent');
+  document.getElementById('creatorQueueCount').textContent = active.length;
+
+  const listEl = document.getElementById('creatorQueueList');
+  listEl.innerHTML = creatorQueue.length
+    ? creatorQueue.slice().reverse().map(q => `
+      <div class="queue-item ${q.status === 'sent' ? 'sent' : ''}">
+        <div class="queue-item-head">
+          <span class="queue-item-title">${escapeHtml(q.topic)} — ${escapeHtml(q.format)}</span>
+          ${q.status === 'sent'
+            ? '<span class="topic-format" style="background:var(--neutral-15); color:var(--neutral-60);">Sent</span>'
+            : `<button class="btn-secondary btn-sm" onclick="sendQueueItemToEditor('${q.id}')">Send to Editor →</button>`}
+        </div>
+        <div class="queue-item-preview">${escapeHtml((q.draft || '').slice(0, 160))}${(q.draft || '').length > 160 ? '…' : ''}</div>
+      </div>
+    `).join('')
+    : '<div class="placeholder">Nothing queued yet — generate a draft above.</div>';
+}
+
+// Content-type values here must match the Editor's actual content-type dropdown
+const CREATOR_TO_EDITOR_TYPE = { 'blog': 'blog', 'help doc': 'helpdoc', 'video': 'video', 'web page': 'other', 'social': 'social' };
+
+async function sendQueueItemToEditor(id){
+  const item = creatorQueue.find(q => q.id === id);
+  if (!item) return;
+
+  draftEl.value = item.draft;
+  document.getElementById('contentType').value = CREATOR_TO_EDITOR_TYPE[item.format] || 'other';
+  updateCounter();
+
+  try{
+    await fetch(WORKER_URL + '/content-creator/queue/mark-sent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    item.status = 'sent';
+    renderCreatorQueue();
+  } catch(e){}
+
+  switchTab('editor');
 }
 </script>
 
