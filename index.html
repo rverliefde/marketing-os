@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClickSend Content Editor</title>
+<title>ClickSend Marketing OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -864,6 +864,73 @@
   .queue-item-head{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px;}
   .queue-item-title{font-family:'Montserrat',sans-serif; font-weight:700; font-size:13.5px; color:var(--navy);}
   .queue-item-preview{font-size:12.5px; color:var(--neutral-60); line-height:1.5; margin-bottom:10px; max-height:60px; overflow:hidden;}
+
+  /* ---- Numbered tab steps ---- */
+  .tab-step-num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:20px; height:20px; border-radius:50%;
+    font-family:'Montserrat',sans-serif; font-size:11px; font-weight:800;
+    background:var(--neutral-15); color:var(--neutral-60);
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .tab-nav-btn.active .tab-step-num{background:var(--blue); color:var(--white);}
+
+  /* ---- Pipeline strip ---- */
+  .pipeline-strip{
+    background:var(--neutral-05);
+    border-bottom:1.5px solid var(--neutral-15);
+    padding:14px 32px 12px;
+  }
+  .pipeline-steps{display:flex; align-items:stretch; gap:10px; flex-wrap:wrap;}
+  .pipeline-step{
+    flex:1 1 180px; min-width:170px;
+    text-align:left; cursor:pointer;
+    background:var(--white);
+    border:1.5px solid var(--neutral-15);
+    border-radius:10px;
+    padding:10px 14px;
+    display:flex; flex-direction:column; gap:3px;
+    font-family:'Open Sans',sans-serif;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .pipeline-step:hover{border-color:var(--blue); background:var(--blue-05);}
+  .pipeline-step.active{border-color:var(--blue); background:var(--blue-05);}
+  .pipeline-step-title{font-family:'Montserrat',sans-serif; font-weight:700; font-size:12.5px; color:var(--navy);}
+  .pipeline-step-desc{font-size:11.5px; color:var(--neutral-60); line-height:1.4;}
+  .pipeline-arrow{align-self:center; color:var(--neutral-30); font-weight:700;}
+  .pipeline-note{margin-top:10px; font-size:12px; color:var(--neutral-60);}
+  @media(max-width:900px){
+    .pipeline-strip{padding:12px 16px 10px;}
+    .pipeline-arrow{display:none;}
+  }
+
+  /* ---- Toasts (replace native alert popups) ---- */
+  .toast-stack{
+    position:fixed; top:16px; right:16px; z-index:1000;
+    display:flex; flex-direction:column; gap:10px;
+    max-width:min(420px, calc(100vw - 32px));
+  }
+  .toast{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--white);
+    border:1.5px solid var(--neutral-15);
+    border-left-width:4px;
+    border-radius:10px;
+    padding:12px 14px;
+    box-shadow:0 6px 24px rgba(11,22,48,0.14);
+    font-size:13px; line-height:1.5; color:var(--neutral-90);
+    animation:toast-in 0.18s ease-out;
+  }
+  .toast.error{border-left-color:var(--err);}
+  .toast.info{border-left-color:var(--blue);}
+  .toast.success{border-left-color:var(--ok);}
+  .toast-msg{flex:1; white-space:pre-line;}
+  .toast-close{
+    background:none; border:none; cursor:pointer;
+    font-size:18px; line-height:1; color:var(--neutral-60); padding:0 2px;
+  }
+  .toast-close:hover{color:var(--navy);}
+  @keyframes toast-in{from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);}}
 </style>
 </head>
 <body>
@@ -872,8 +939,8 @@
   <div class="brand">
     <div class="mark">CS</div>
     <div>
-      <h1>ClickSend Content Editor</h1>
-      <div class="sub">Vet &amp; rewrite against brand, tone and past examples</div>
+      <h1>ClickSend Marketing OS</h1>
+      <div class="sub">From market insight to on-brand content — four steps, start anywhere</div>
     </div>
   </div>
   <div class="docs-status" id="docsStatus">
@@ -883,11 +950,36 @@
 </header>
 
 <nav class="tab-nav" id="tabNav">
-  <button class="tab-nav-btn" data-tab="intel" onclick="switchTab('intel')">Competitive Intel</button>
-  <button class="tab-nav-btn" data-tab="seo" onclick="switchTab('seo')">SEO Content Engine</button>
-  <button class="tab-nav-btn" data-tab="creator" onclick="switchTab('creator')">Content Creator</button>
-  <button class="tab-nav-btn active" data-tab="editor" onclick="switchTab('editor')">Content Editor</button>
+  <button class="tab-nav-btn" data-tab="intel" onclick="switchTab('intel')"><span class="tab-step-num">1</span>Competitive Intel</button>
+  <button class="tab-nav-btn" data-tab="seo" onclick="switchTab('seo')"><span class="tab-step-num">2</span>SEO Content Engine</button>
+  <button class="tab-nav-btn" data-tab="creator" onclick="switchTab('creator')"><span class="tab-step-num">3</span>Content Creator</button>
+  <button class="tab-nav-btn active" data-tab="editor" onclick="switchTab('editor')"><span class="tab-step-num">4</span>Content Editor</button>
 </nav>
+
+<div class="pipeline-strip" id="pipelineStrip">
+  <div class="pipeline-steps">
+    <button class="pipeline-step" data-tab="intel" onclick="switchTab('intel')">
+      <span class="pipeline-step-title">1 · Find the angle</span>
+      <span class="pipeline-step-desc">See what the market says about us and competitors</span>
+    </button>
+    <span class="pipeline-arrow">→</span>
+    <button class="pipeline-step" data-tab="seo" onclick="switchTab('seo')">
+      <span class="pipeline-step-title">2 · Pick topics</span>
+      <span class="pipeline-step-desc">Review ideas, shortlist or bench, or add your own</span>
+    </button>
+    <span class="pipeline-arrow">→</span>
+    <button class="pipeline-step" data-tab="creator" onclick="switchTab('creator')">
+      <span class="pipeline-step-title">3 · Draft it</span>
+      <span class="pipeline-step-desc">Generate blog, video, help doc or LinkedIn drafts</span>
+    </button>
+    <span class="pipeline-arrow">→</span>
+    <button class="pipeline-step" data-tab="editor" onclick="switchTab('editor')">
+      <span class="pipeline-step-title">4 · Make it ours</span>
+      <span class="pipeline-step-desc">Vet against brand and tone, translate, approve</span>
+    </button>
+  </div>
+  <div class="pipeline-note">Already have a draft? Jump straight to step 4. Starting fresh? Go left to right.</div>
+</div>
 
 <div id="tab-editor" class="tab-panel active">
 <main>
@@ -975,7 +1067,7 @@
     <div class="intel-header-row">
       <div>
         <h2>Content Creator</h2>
-        <div class="intel-meta">Drafts from approved pending topics, one or more formats at a time, then queues each for handoff to the Editor.</div>
+        <div class="intel-meta">Drafts from shortlisted topics, one or more formats at a time, then queues each for handoff to the Editor.</div>
       </div>
     </div>
   </section>
@@ -983,7 +1075,7 @@
   <section class="panel">
     <h2>Pick a topic</h2>
     <select id="creatorTopicSelect" class="creator-select" onchange="onCreatorTopicChange()">
-      <option value="">Loading pending topics…</option>
+      <option value="">Loading shortlisted topics…</option>
     </select>
 
     <div id="creatorTopicDetail" class="creator-topic-detail" style="display:none;">
@@ -1106,9 +1198,9 @@
   </section>
 
   <section class="panel">
-    <h2>Pending content <span class="tab-nav-badge" id="topicsPendingCount">0</span></h2>
+    <h2>Shortlisted <span class="tab-nav-badge" id="topicsPendingCount">0</span></h2>
     <div class="topics-list" id="topicsPendingList">
-      <div class="placeholder">Nothing approved yet.</div>
+      <div class="placeholder">Nothing shortlisted yet.</div>
     </div>
   </section>
 
@@ -2034,6 +2126,7 @@ function switchTab(name){
   document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   document.querySelector('.tab-nav-btn[data-tab="' + name + '"]').classList.add('active');
+  document.querySelectorAll('.pipeline-step').forEach(s => s.classList.toggle('active', s.dataset.tab === name));
   if (name === 'intel' && !intelLoaded) loadIntelSnapshot();
   if (name === 'seo' && !blogInvLoaded) loadBlogInventory();
   if (name === 'seo' && !topicsLoaded) loadTopicIdeas();
@@ -2195,7 +2288,7 @@ async function refreshIntelAll(){
       }
     }
   } catch(e){
-    alert('Refresh failed: ' + (e.message || e) + '\n\nWhatever completed before this point is not saved — click Refresh now to start over.');
+    showToast('Refresh failed: ' + (e.message || e) + '\n\nWhatever completed before this point is not saved — click Refresh now to start over.');
   } finally {
     btn.disabled = false;
     btn.textContent = '↻ Refresh now';
@@ -2360,7 +2453,7 @@ async function syncBlogInventory(){
       }
     }
   } catch(e){
-    alert('Sync failed: ' + (e.message || e));
+    showToast('Sync failed: ' + (e.message || e));
   } finally {
     btn.disabled = false;
     btn.textContent = '↻ Sync now';
@@ -2412,7 +2505,7 @@ function renderTopicRegistry(){
 
   document.getElementById('topicsPendingList').innerHTML = pending.length
     ? pending.map(t => topicCardHtml(t, ['bench'])).join('')
-    : '<div class="placeholder">Nothing approved yet.</div>';
+    : '<div class="placeholder">Nothing shortlisted yet.</div>';
 
   document.getElementById('topicsBenchedList').innerHTML = benched.length
     ? benched.map(t => topicCardHtml(t, ['restore'])).join('')
@@ -2453,7 +2546,7 @@ async function setTopicStatus(id, status){
     if (topic) topic.status = status;
     renderTopicRegistry();
   } catch(e){
-    alert('Could not update topic: ' + (e.message || e));
+    showToast('Could not update topic: ' + (e.message || e));
   }
 }
 
@@ -2463,7 +2556,7 @@ async function submitManualTopic(){
   const title = titleEl.value.trim();
   const description = descEl.value.trim();
   if (!title || !description){
-    alert('Add both a title and a description.');
+    showToast('Add both a title and a description.','info');
     return;
   }
   try{
@@ -2479,7 +2572,7 @@ async function submitManualTopic(){
     titleEl.value = '';
     descEl.value = '';
   } catch(e){
-    alert('Could not add topic: ' + (e.message || e));
+    showToast('Could not add topic: ' + (e.message || e));
   }
 }
 
@@ -2521,7 +2614,7 @@ async function generateTopicIdeas(){
       }
     }
   } catch(e){
-    alert('Generate failed: ' + (e.message || e));
+    showToast('Generate failed: ' + (e.message || e));
   } finally {
     btn.disabled = false;
     btn.textContent = '↻ Generate ideas';
@@ -2552,7 +2645,7 @@ async function loadCreatorTopics(){
     creatorPendingTopics = (data.topics || []).filter(t => t.status === 'pending');
     select.innerHTML = creatorPendingTopics.length
       ? '<option value="">Choose a topic…</option>' + creatorPendingTopics.map((t, i) => `<option value="${i}">${escapeHtml(t.topic)}</option>`).join('')
-      : '<option value="">No pending topics — approve one in SEO Content Engine first</option>';
+      : '<option value="">No shortlisted topics — progress one in SEO Content Engine first</option>';
     creatorTopicsLoaded = true;
   } catch(e){
     select.innerHTML = '<option value="">Could not reach the Worker</option>';
@@ -2584,7 +2677,7 @@ async function generateCreatorDrafts(){
   const topic = creatorPendingTopics[idx];
   const checks = [...document.querySelectorAll('#creatorFormatChecks input[type="checkbox"]:checked')];
   if (!checks.length){
-    alert('Select at least one format.');
+    showToast('Select at least one format.','info');
     return;
   }
   const btn = document.getElementById('creatorGenerateBtn');
@@ -2607,7 +2700,7 @@ async function generateCreatorDrafts(){
       creatorQueue.push(data.queueItem);
       renderCreatorQueue();
     } catch(e){
-      alert(`Draft generation failed for ${format}: ` + (e.message || e));
+      showToast(`Draft generation failed for ${format}: ` + (e.message || e));
     }
   }
 
@@ -2668,7 +2761,29 @@ async function sendQueueItemToEditor(id){
 
   switchTab('editor');
 }
+
+function showToast(message, type){
+  type = type || 'error';
+  var stack = document.getElementById('toastStack');
+  if(!stack){ return; }
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
+  var m = document.createElement('div');
+  m.className = 'toast-msg';
+  m.style.whiteSpace = 'pre-line';
+  m.textContent = String(message);
+  var c = document.createElement('button');
+  c.className = 'toast-close';
+  c.setAttribute('aria-label','Dismiss');
+  c.textContent = '\u00d7';
+  c.onclick = function(){ t.remove(); };
+  t.appendChild(m); t.appendChild(c);
+  stack.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) t.remove(); }, type === 'error' ? 12000 : 6000);
+}
+document.querySelectorAll('.pipeline-step').forEach(function(s){ s.classList.toggle('active', s.dataset.tab === 'editor'); });
 </script>
 
+<div class="toast-stack" id="toastStack"></div>
 </body>
 </html>
