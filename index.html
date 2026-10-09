@@ -2526,6 +2526,7 @@ function topicCardHtml(t, actions){
       </div>
       <div class="topic-meta-row">
         <span class="topic-format">${escapeHtml(t.format)}</span>
+        ${t.angle ? `<span class="topic-format" style="background:var(--accent-bg); color:var(--accent);">${escapeHtml(t.angle)}</span>` : ''}
         ${t.source === 'manual' ? '<span class="topic-format" style="background:var(--neutral-15); color:var(--neutral-60);">Manual</span>' : ''}
       </div>
       <div class="topic-rationale">${escapeHtml(t.paragraph)}</div>
@@ -2690,7 +2691,7 @@ async function generateCreatorDrafts(){
       const res = await fetch(WORKER_URL + '/content-creator/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: topic.topic, groundedInGap: topic.paragraph, format })
+        body: JSON.stringify({ topic: topic.topic, groundedInGap: topic.paragraph, angle: topic.angle || '', format })
       });
       if (!res.ok){
         const errBody = await res.json().catch(() => ({}));
